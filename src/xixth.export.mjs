@@ -28,7 +28,10 @@ import { tryAsync } from 'vivth';
  * // @ts-check
  * import { xixth } from 'xixth';
  *
- * new xixth({ pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} });
+ * new xixth({
+ *		packageName: 'your-package-name',
+ *		pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} // optional
+ * });
  * ```
  * >- by calling:
  * ```shell
@@ -47,6 +50,7 @@ import { tryAsync } from 'vivth';
  * import { xixth } from 'xixth';
  *
  * new xixth({
+ * 	packageName: 'your-package-name',
  * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
  * 	flagCallbacks: { // optional
  * 		beforeCopy: async ({ ...flagsKeys }) {
@@ -65,7 +69,20 @@ export class xixth {
 	/**
 	 * @typedef {import('../index.mjs').FlagEntry} FlagEntry
 	 */
-	static __dirname = dirname(fileURLToPath(import.meta.url));
+	/**
+	 * @private
+	 */
+	static __dirname = null;
+	/**
+	 * @param {string} packageName
+	 * @returns {void}
+	 */
+	static generateDirName = (packageName) => {
+		if (xixth.__dirname === null) {
+			const packageEntry = fileURLToPath(import.meta.resolve(packageName));
+			xixth.__dirname = dirname(packageEntry.split(`${packageName}/`)[0] + packageName);
+		}
+	};
 	static targetDir = process.env.INIT_CWD || process.cwd();
 	/**
 	 * @param {string} relativePath
@@ -79,6 +96,8 @@ export class xixth {
 	static projectPath = (relativePath) => join(xixth.targetDir, relativePath);
 	/**
 	 * @param {Object} options
+	 * @param {string} options.packageName
+	 * - input with your `packageName`
 	 * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
 	 * - export relativePath to project root, works for dirs and files alike;
 	 * @param {Object} [options.flagCallbacks]
@@ -90,6 +109,7 @@ export class xixth {
 		 * @private
 		 */
 		this.options = options;
+		xixth.generateDirName(options.packageName);
 		/**
 		 * @type {FlagEntry}
 		 */
@@ -116,12 +136,12 @@ export class xixth {
 					await this.copyFiles(srcPath, destPath);
 				} else {
 					await copyFile(srcPath, destPath);
-					console.log(`📄 Copied: ${entry.name}`);
+					console.log(`📄 Copied: ${srcPath}`);
 				}
 			}
 		});
 		if (error) {
-			console.error({ error, src, dest, failed: 'unable to copy `src` to `dest`' });
+			console.error({ error, src, dest, failed: '⚠ unable to copy `src` to `dest`' });
 		}
 	};
 	/**

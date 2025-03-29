@@ -3,14 +3,15 @@
   "workspaces": {
     "": {
       "name": "xixth",
-      "dependencies": {
-        "vivth": "^0.9.2",
-      },
       "devDependencies": {
         "@html_first/js_lib_template": "link:@html_first/js_lib_template",
         "@types/bun": "^1.2.8",
         "concurrently": "^9.1.2",
         "typescript": "^5.8.2",
+        "xixth": "link:xixth",
+      },
+      "peerDependencies": {
+        "vivth": "^0.9.2",
       },
     },
   },
@@ -74,6 +75,8 @@
     "vivth": ["vivth@0.9.2", "", {}, "sha512-XZoj8Sr6h8rYcUys6QfkKYSPC6vhwYHD+C+/h7tltHCbxD/exNAu1If7PhTjiTuqqSDIwZXHHQzE5ZRnIfYVLw=="],
 
     "wrap-ansi": ["wrap-ansi@7.0.0", "", { "dependencies": { "ansi-styles": "^4.0.0", "string-width": "^4.1.0", "strip-ansi": "^6.0.0" } }, "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q=="],
+
+    "xixth": ["xixth@link:xixth", {}],
 
     "y18n": ["y18n@5.0.8", "", {}, "sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA=="],
 

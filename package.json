@@ -1,6 +1,6 @@
 {
 	"name": "xixth",
-	"version": "0.2.0",
+	"version": "0.8.0",
 	"description": "package starter installation helper",
 	"keywords": [
 		"starter helper",
@@ -9,6 +9,9 @@
 		"installation",
 		"project starter"
 	],
+	"bin": {
+		"test-xixth": "./test.mjs"
+	},
 	"main": "index.mjs",
 	"repository": {
 		"type": "git",
@@ -27,7 +30,8 @@
 		"@html_first/js_lib_template": "link:@html_first/js_lib_template",
 		"@types/bun": "^1.2.8",
 		"concurrently": "^9.1.2",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.2",
+		"xixth": "link:xixth"
 	},
 	"peerDependencies": {
 		"vivth": "^0.9.2"

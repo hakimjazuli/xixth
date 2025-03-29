@@ -20,7 +20,10 @@
  * // @ts-check
  * import { xixth } from 'xixth';
  *
- * new xixth({ pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} });
+ * new xixth({
+ *		packageName: 'your-package-name',
+ *		pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} // optional
+ * });
  * ```
  * >- by calling:
  * ```shell
@@ -39,6 +42,7 @@
  * import { xixth } from 'xixth';
  *
  * new xixth({
+ * 	packageName: 'your-package-name',
  * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
  * 	flagCallbacks: { // optional
  * 		beforeCopy: async ({ ...flagsKeys }) {
@@ -57,7 +61,15 @@ export class xixth {
     /**
      * @typedef {import('../index.mjs').FlagEntry} FlagEntry
      */
-    static __dirname: string;
+    /**
+     * @private
+     */
+    private static __dirname;
+    /**
+     * @param {string} packageName
+     * @returns {void}
+     */
+    static generateDirName: (packageName: string) => void;
     static targetDir: string;
     /**
      * @param {string} relativePath
@@ -77,6 +89,8 @@ export class xixth {
     private static copyFiles;
     /**
      * @param {Object} options
+     * @param {string} options.packageName
+     * - input with your `packageName`
      * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
      * - export relativePath to project root, works for dirs and files alike;
      * @param {Object} [options.flagCallbacks]
@@ -84,6 +98,7 @@ export class xixth {
      * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
      */
     constructor(options: {
+        packageName: string;
         pathCopyHandler?: {
             [key: string]: {
                 src: string;
