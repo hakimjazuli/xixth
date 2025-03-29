@@ -1,13 +1,14 @@
 ## xixth
 - are a helper for project starter, mainly to be used as:
->- executable through `bin` object which can be called using `npx package-name`;
+>- executable through `bin` object which can be called using `npx bin-script-name`;
 ```json
 // package.json
 ...
 	"bin": {
-		"neinth": "bin.mjs"
+		"bin-script-name": "bin.mjs"
 	},
 ...
+>>- you can add your `packageName` on the bin-script-name to avoid global script collision;
 ```
 >- `postInstall` on `scripts` object, which can be called using `npm i package-name`;
 ```json
