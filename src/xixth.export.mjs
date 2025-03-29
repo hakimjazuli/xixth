@@ -11,6 +11,7 @@ import { tryAsync } from 'vivth';
  * - create your `setupFile`
  * ```js
  * // setupFile.mjs
+ * #!/usr/bin/env node
  * // @ts-check
  * import { xixth } from 'xixth';
  * new xixth({ dirs:[...relativeDirPaths], files:[...relativeFilePaths] });
