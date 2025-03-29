@@ -121,7 +121,7 @@ export class xixth {
 			}
 		});
 		if (error) {
-			console.error({ error, src, dest });
+			console.error({ error, src, dest, failed: 'unable to copy `src` to `dest`' });
 		}
 	};
 	/**
