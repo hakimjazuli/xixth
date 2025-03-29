@@ -1,0 +1,28 @@
+{
+	"name": "xixth",
+	"version": "0.0.1",
+	"description": "package starter installation helper",
+	"main": "index.mjs",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/hakimjazuli/xixth.git"
+	},
+	"author": "hakim_jazuli",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/hakimjazuli/xixth/issues"
+	},
+	"homepage": "https://github.com/hakimjazuli/xixth#readme",
+	"scripts": {
+		"dev": "concurrently \"bun --watch ./documentation.mjs\" \"bun tsc --watch\""
+	},
+	"devDependencies": {
+		"@html_first/js_lib_template": "link:@html_first/js_lib_template",
+		"@types/bun": "^1.2.8",
+		"concurrently": "^9.1.2",
+		"typescript": "^5.8.2"
+	},
+	"peerDependencies": {
+		"vivth": "^0.9.2"
+	}
+}
