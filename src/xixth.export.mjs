@@ -74,6 +74,7 @@ export class xixth {
 	 */
 	static __dirname = null;
 	/**
+	 * @private
 	 * @param {string} packageName
 	 * @returns {void}
 	 */
@@ -95,6 +96,11 @@ export class xixth {
 	 */
 	static projectPath = (relativePath) => join(xixth.targetDir, relativePath);
 	/**
+	 * @private
+	 * @type {null|xixth}
+	 */
+	static __ = null;
+	/**
 	 * @param {Object} options
 	 * @param {string} options.packageName
 	 * - input with your `packageName`
@@ -105,6 +111,10 @@ export class xixth {
 	 * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
 	 */
 	constructor(options) {
+		if (xixth.__ instanceof xixth) {
+			return xixth.__;
+		}
+		xixth.__ = this;
 		/**
 		 * @private
 		 */

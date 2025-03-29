@@ -66,10 +66,11 @@ export class xixth {
      */
     private static __dirname;
     /**
+     * @private
      * @param {string} packageName
      * @returns {void}
      */
-    static generateDirName: (packageName: string) => void;
+    private static generateDirName;
     static targetDir: string;
     /**
      * @param {string} relativePath
@@ -81,6 +82,11 @@ export class xixth {
      * @returns {string}
      */
     static projectPath: (relativePath: string) => string;
+    /**
+     * @private
+     * @type {null|xixth}
+     */
+    private static __;
     /**
      * @private
      * @param {string} src
