@@ -10,7 +10,7 @@
  *
  * new xixth({ ...flagKeys:{src:'path', dest:'path'} });
  * ```
- * - flagKeys are identifier for the user to overwrite its dest path with their own custom path;
+ * - flagKeys are identifier for the user to overwrite its `dest` path with their own `custom path`;
  * - example:
  * ```js
  * // setupFile.mjs
@@ -24,8 +24,11 @@
  * ```shell
  * // using binary with bin object setting
  * npx your-package-name -devs custom_dev
+ * // OR
+ * // using postInstall with scripts object setting
+ * npm i your-package-name -devs custom_dev
  * ```
- * >- will overwrite user dest with `"custom_dev"`
+ * >- will overwrite user `devs.dest` with `"custom_dev"`
  */
 export class xixth {
     static __dirname: string;

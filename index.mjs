@@ -7,7 +7,7 @@
  * @description
  * ## xixth
  * - are a helper for project starter, mainly to be used as:
- * >- executable through `bin` object;
+ * >- executable through `bin` object which can be called using `npx package-name`;
  * ```json
  * // package.json
  * ...
@@ -16,7 +16,7 @@
  * 	},
  * ...
  * ```
- * >- `postInstall` on `scripts` object;
+ * >- `postInstall` on `scripts` object, which can be called using `npm i package-name`;
  * ```json
  * // package.json
  * 	...
