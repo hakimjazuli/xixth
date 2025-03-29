@@ -6,7 +6,26 @@
  * this library is made and distributed under MIT license
  * @description
  * ## xixth
- * - are made for internal usage of `@html_first` starter projects and past `neinht/0.9.x` releases;
- * - though it's functionality are made general enough for `general npm packages` usages;
+ * - are a helper for project starter, mainly to be used as:
+ * >- executable through `bin` object;
+ * ```json
+ * // package.json
+ * ...
+ * 	"bin": {
+ * 		"neinth": "bin.mjs"
+ * 	},
+ * ...
+ * ```
+ * >- `postInstall` on `scripts` object;
+ * ```json
+ * // package.json
+ * 	...
+ * 	"script":{
+ * 		...
+ * 		"postInstall": "node ./setup.mjs",
+ * 		...
+ * 	},
+ * 	...
+ * ```
  */
 export { xixth } from './src//xixth.export.mjs';
