@@ -2,6 +2,13 @@
 	"name": "xixth",
 	"version": "0.0.1",
 	"description": "package starter installation helper",
+	"keywords": [
+		"starter helper",
+		"installation helper",
+		"starter",
+		"installation",
+		"project starter"
+	],
 	"main": "index.mjs",
 	"repository": {
 		"type": "git",
