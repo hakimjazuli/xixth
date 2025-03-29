@@ -1,6 +1,7 @@
 // @ts-check
 
 import { copyFile, mkdir, readdir } from 'fs/promises';
+import { getFlags } from './getFlags.mjs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { tryAsync } from 'vivth';
@@ -15,9 +16,11 @@ import { tryAsync } from 'vivth';
  * // @ts-check
  * import { xixth } from 'xixth';
  *
- * new xixth({ ...flagKeys:{src:'path', dest:'path'} });
+ * new xixth({
+ * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
+ * });
  * ```
- * - flagKeys are identifier for the user to overwrite its `dest` path with their own `custom path`;
+ * - `pathCopyHandler.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
  * - example:
  * ```js
  * // setupFile.mjs
@@ -25,7 +28,7 @@ import { tryAsync } from 'vivth';
  * // @ts-check
  * import { xixth } from 'xixth';
  *
- * new xixth({ devs:{src:'dev', dest:'default_dev'} });
+ * new xixth({ pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} });
  * ```
  * >- by calling:
  * ```shell
@@ -35,45 +38,66 @@ import { tryAsync } from 'vivth';
  * // using postInstall with scripts object setting
  * npm i your-package-name -devs custom_dev
  * ```
- * >- will overwrite user `devs.dest` with `"custom_dev"`
+ * >- will overwrite user `devs.dest` with `"custom_dev"`;
+ * - and you can also handle flags like this:
+ * ```js
+ * // setupFile.mjs
+ * #!/usr/bin/env node
+ * // @ts-check
+ * import { xixth } from 'xixth';
+ *
+ * new xixth({
+ * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
+ * 	flagCallbacks: { // optional
+ * 		beforeCopy: async ({ ...flagsKeys }) {
+ * 			// code run before pathCopyHandler
+ * 		}, // optional
+ * 		afterCopy: async ({ ...flagsKeys }) {
+ * 			// code run after pathCopyHandler
+ * 		}, // optional
+ * 	},
+ * });
+ * ```
+ * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled;
+ * >- as of now `xixth` only support key value pair on flags;
  */
 export class xixth {
+	/**
+	 * @typedef {import('../index.mjs').FlagEntry} FlagEntry
+	 */
 	static __dirname = dirname(fileURLToPath(import.meta.url));
+	static targetDir = process.env.INIT_CWD || process.cwd();
 	/**
 	 * @param {string} relativePath
 	 * @returns {string}
 	 */
-	static absolutePath = (relativePath) => join(xixth.__dirname, relativePath);
+	static packagePath = (relativePath) => join(xixth.__dirname, relativePath);
+	/**
+	 * @param {string} relativePath
+	 * @returns {string}
+	 */
+	static projectPath = (relativePath) => join(xixth.targetDir, relativePath);
 	/**
 	 * @param {Object} options
-	 * @param {{[key:string]:{src:string, dest:string}}} options.pathCopyHandler
+	 * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
 	 * - export relativePath to project root, works for dirs and files alike;
+	 * @param {Object} [options.flagCallbacks]
+	 * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
+	 * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
 	 */
 	constructor(options) {
 		/**
 		 * @private
 		 */
 		this.options = options;
+		/**
+		 * @type {FlagEntry}
+		 */
+		this.flags = getFlags.flags;
 		this.run();
 	}
-	/** @typedef {{ name: string, value: string }} FlagEntry */
 	/**
-	 * Parses command-line arguments into a Set<{name, value}>
-	 * @returns {Set<FlagEntry>}
-	 */
-	static parseArgs = () => {
-		const args = process.argv.slice(2);
-		const flags = new Set();
-		for (let i = 0; i < args.length; i++) {
-			if (args[i].startsWith('-')) {
-				const name = args[i].replace(/^-+/, '');
-				const value = args[i + 1] && !args[i + 1].startsWith('-') ? args[++i] : '';
-				flags.add({ name, value });
-			}
-		}
-		return flags;
-	};
-	/**
+	 * @private
 	 * @param {string} src
 	 * @param {string} dest
 	 */
@@ -100,17 +124,35 @@ export class xixth {
 			console.error({ error, src, dest });
 		}
 	};
+	/**
+	 * @private
+	 */
 	run = async () => {
-		const flags = xixth.parseArgs();
-		const { pathCopyHandler } = this.options;
-		const absolutePath = xixth.absolutePath;
-		for (const key in pathCopyHandler) {
-			const file = pathCopyHandler[key];
-			let dest = file.dest;
-			if (key in flags) {
-				dest = flags[key];
+		const { pathCopyHandler = false, flagCallbacks = false } = this.options;
+		const flags = this.flags;
+		const packagePath = xixth.packagePath;
+		const projectPath = xixth.projectPath;
+		if (flagCallbacks !== false) {
+			const { beforeCopy = false } = flagCallbacks;
+			if (beforeCopy !== false) {
+				await beforeCopy(flags);
 			}
-			await xixth.copyFiles(absolutePath(file.src), absolutePath(dest));
+		}
+		if (pathCopyHandler !== false) {
+			for (const key in pathCopyHandler) {
+				const file = pathCopyHandler[key];
+				let dest = file.dest;
+				if (key in flags) {
+					dest = flags[key];
+				}
+				await xixth.copyFiles(packagePath(file.src), projectPath(dest));
+			}
+		}
+		if (flagCallbacks !== false) {
+			const { afterCopy = false } = flagCallbacks;
+			if (afterCopy !== false) {
+				await afterCopy(flags);
+			}
 		}
 	};
 }

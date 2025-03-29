@@ -29,3 +29,6 @@
  * ```
  */
 export { xixth } from './src//xixth.export.mjs';
+/**
+ * @typedef {{[flagName:string]:string}} FlagEntry
+ */
