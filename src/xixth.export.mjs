@@ -43,18 +43,14 @@ import { tryAsync } from 'vivth';
  *
  * new xixth({
  *		packageName: 'your-package-name',
- *		pathCopyHandlers: { devs: { src: 'dev', dest: 'default_dev' } }
+ *		pathCopyHandlers: { devsflag: { src: 'dev', dest: 'default_dev' } }
  * });
  * ```
  * >- by calling:
  * ```shell
- * // using binary with bin object setting
- * npx your-package-name -devs custom_dev
- * // OR
- * // using postInstall with scripts object setting
- * npm i your-package-name -devs custom_dev
+ * npx your-package-name -devsflag custom_dev
  * ```
- * >- will overwrite user `devs.dest` with `"custom_dev"`;
+ * >- will overwrite user `devsflag.dest` with `"custom_dev"`;
  * - and you can also handle flags like this:
  * ```js
  * // setupFile.mjs
@@ -178,12 +174,12 @@ export class xixth {
 			} else {
 				console.error(`⚠ \`${packageName}\` unable to copy from "${src}" to "${dest}"`);
 			}
+			return;
+		}
+		if ('success' in on) {
+			await on.success();
 		} else {
-			if ('success' in on) {
-				await on.success();
-			} else {
-				console.log(`📃 \`${packageName}\` successfully copy from "${src}" to "${dest}"`);
-			}
+			console.log(`📃 \`${packageName}\` successfully copy from "${src}" to "${dest}"`);
 		}
 	};
 	/**
