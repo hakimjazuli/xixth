@@ -67,7 +67,7 @@
  * });
  * ```
  * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled, as of now `xixth` only support key value pair on flags;
- * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyFiles` `public method` for general convenience;
+ * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyPath` `public method` for general convenience;
  */
 export class xixth {
     /**
@@ -147,7 +147,7 @@ export class xixth {
      * @param {string} dest
      * @param {{success?:()=>Promise<void>,failed?:()=>Promise<void>}} [on]
      */
-    copyFiles: (src: string, dest: string, on?: {
+    copyPath: (src: string, dest: string, on?: {
         success?: () => Promise<void>;
         failed?: () => Promise<void>;
     }) => Promise<void>;

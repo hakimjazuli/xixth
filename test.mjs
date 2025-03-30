@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // @ts-check
+
 import { xixth } from 'xixth';
+
 new xixth({
 	packageName: 'xixth',
 	pathCopyHandlers: { testflag: { src: 'test-copy', dest: 'test-paste' } },

@@ -1,6 +1,7 @@
 // @ts-check
 
 import { copyFile, mkdir, readdir } from 'fs/promises';
+import { existsSync, statSync } from 'fs';
 import { getFlags } from './getFlags.mjs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -75,7 +76,7 @@ import { tryAsync } from 'vivth';
  * });
  * ```
  * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled, as of now `xixth` only support key value pair on flags;
- * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyFiles` `public method` for general convenience;
+ * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyPath` `public method` for general convenience;
  */
 export class xixth {
 	/**
@@ -151,10 +152,12 @@ export class xixth {
 	 * @param {string} dest
 	 * @param {{success?:()=>Promise<void>,failed?:()=>Promise<void>}} [on]
 	 */
-	copyFiles = async (src, dest, on) => {
+	copyPath = async (src, dest, on) => {
 		const packageName = this.packageName;
 		const [_, error] = await tryAsync(async () => {
-			await mkdir(dest, { recursive: true });
+			if (statSync(src).isDirectory() && !existsSync(dest)) {
+				await mkdir(dest, { recursive: true });
+			}
 			const entries = await readdir(src, { withFileTypes: true });
 			if (entries.length === 0) {
 				return;
@@ -163,7 +166,7 @@ export class xixth {
 				const srcPath = join(src, entry.name);
 				const destPath = join(dest, entry.name);
 				if (entry.isDirectory()) {
-					await this.copyFiles(srcPath, destPath, on);
+					await this.copyPath(srcPath, destPath, on);
 				} else {
 					await copyFile(srcPath, destPath);
 				}
@@ -204,7 +207,7 @@ export class xixth {
 				if (key in flags) {
 					dest = flags[key];
 				}
-				await this.copyFiles(packagePath(src), projectPath(dest), on);
+				await this.copyPath(packagePath(src), projectPath(dest), on);
 			}
 		}
 		if (flagCallbacks !== false) {

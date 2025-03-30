@@ -9,10 +9,13 @@
 		"installation",
 		"project starter"
 	],
-	"bin": {
-		"test-xixth": "./test.mjs"
-	},
+	"type": "module",
 	"main": "index.mjs",
+	"types": "./types/index.d.mts",
+	"bin": {
+		"xixth-test": "./test.mjs",
+		"xixth-add-bin": "./createBin.mjs"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/hakimjazuli/xixth.git"
