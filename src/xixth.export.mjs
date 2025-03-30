@@ -17,10 +17,22 @@ import { tryAsync } from 'vivth';
  * import { xixth } from 'xixth';
  *
  * new xixth({
- * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
+ *		packageName: 'your-package-name',
+ *		pathCopyHandlers:{ // optional
+ *			...flagKeys:{
+ *				src:'dev', dest:'default_dev',
+ *				on:{  // optional if not declared it will be filled with basic console.log upon both condition
+ *					success: async () => { // optional if not declared it will be filled with basic console.log
+ *						// code
+ *					},
+ *					failed: async () => { // optional if not declared it will be filled with basic console.error
+ *						// code
+ *					},
+ *				}
+ *			}}
  * });
  * ```
- * - `pathCopyHandler.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
+ * - `pathCopyHandlers.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
  * - example:
  * ```js
  * // setupFile.mjs
@@ -30,7 +42,7 @@ import { tryAsync } from 'vivth';
  *
  * new xixth({
  *		packageName: 'your-package-name',
- *		pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} // optional
+ *		pathCopyHandlers: { devs: { src: 'dev', dest: 'default_dev' } }
  * });
  * ```
  * >- by calling:
@@ -51,14 +63,14 @@ import { tryAsync } from 'vivth';
  *
  * new xixth({
  * 	packageName: 'your-package-name',
- * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
+ * 	pathCopyHandlers: {...flagKeys:{src:'path', dest:'path'}}, // optional
  * 	flagCallbacks: { // optional
- * 		async beforeCopy({ ...flagsKeys }) {
- * 			// code run before pathCopyHandler
- * 		}, // optional
- * 		async afterCopy ({ ...flagsKeys }) {
- * 			// code run after pathCopyHandler
- * 		}, // optional
+ * 		async beforeCopy({ ...flagsKeys }) { // optional
+ * 			// code run before pathCopyHandlers
+ * 		},
+ * 		async afterCopy ({ ...flagsKeys }) { // optional
+ * 			// code run after pathCopyHandlers
+ * 		},
  * 	},
  * });
  * ```
@@ -107,7 +119,7 @@ export class xixth {
 	 * @param {Object} options
 	 * @param {string} options.packageName
 	 * - input with your `packageName`
-	 * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
+	 * @param {{[key:string]:{src:string, dest:string, on?:{success?:()=>Promise<void>,failed?:()=>Promise<void>}}}} [options.pathCopyHandlers]
 	 * - export relativePath to project root, works for dirs and files alike;
 	 * @param {Object} [options.flagCallbacks]
 	 * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
@@ -122,8 +134,13 @@ export class xixth {
 		 * @private
 		 */
 		this.options = options;
+		/**
+		 * @private
+		 */
+		this.packageName = options.packageName;
 		this.generateDirName(options.packageName);
 		/**
+		 * @private
 		 * @type {FlagEntry}
 		 */
 		this.flags = getFlags.flags;
@@ -132,8 +149,10 @@ export class xixth {
 	/**
 	 * @param {string} src
 	 * @param {string} dest
+	 * @param {{success?:()=>Promise<void>,failed?:()=>Promise<void>}} [on]
 	 */
-	copyFiles = async (src, dest) => {
+	copyFiles = async (src, dest, on) => {
+		const packageName = this.packageName;
 		const [_, error] = await tryAsync(async () => {
 			await mkdir(dest, { recursive: true });
 			const entries = await readdir(src, { withFileTypes: true });
@@ -144,22 +163,31 @@ export class xixth {
 				const srcPath = join(src, entry.name);
 				const destPath = join(dest, entry.name);
 				if (entry.isDirectory()) {
-					await this.copyFiles(srcPath, destPath);
+					await this.copyFiles(srcPath, destPath, on);
 				} else {
 					await copyFile(srcPath, destPath);
-					console.log(`📃 \`xixth\` successfully copy from "${srcPath}" to "${destPath}"`);
 				}
 			}
 		});
 		if (error) {
-			console.error(`⚠ \`xixth\` unable to copy "${src}" to "${dest}"`);
+			if ('failed' in on) {
+				await on.failed();
+			} else {
+				console.error(`⚠ \`${packageName}\` unable to copy from "${src}" to "${dest}"`);
+			}
+		} else {
+			if ('success' in on) {
+				await on.success();
+			} else {
+				console.log(`📃 \`${packageName}\` successfully copy from "${src}" to "${dest}"`);
+			}
 		}
 	};
 	/**
 	 * @private
 	 */
 	run = async () => {
-		const { pathCopyHandler = false, flagCallbacks = false } = this.options;
+		const { pathCopyHandlers = false, flagCallbacks = false } = this.options;
 		const flags = this.flags;
 		const packagePath = this.generatePackageAbsolutePath;
 		const projectPath = this.generateProjectAbsolutePath;
@@ -169,14 +197,14 @@ export class xixth {
 				await beforeCopy.call(this, flags);
 			}
 		}
-		if (pathCopyHandler !== false) {
-			for (const key in pathCopyHandler) {
-				const file = pathCopyHandler[key];
-				let dest = file.dest;
+		if (pathCopyHandlers !== false) {
+			for (const key in pathCopyHandlers) {
+				const file = pathCopyHandlers[key];
+				let { dest, src, on = {} } = file;
 				if (key in flags) {
 					dest = flags[key];
 				}
-				await this.copyFiles(packagePath(file.src), projectPath(dest));
+				await this.copyFiles(packagePath(src), projectPath(dest), on);
 			}
 		}
 		if (flagCallbacks !== false) {

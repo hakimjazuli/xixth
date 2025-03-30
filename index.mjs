@@ -30,6 +30,13 @@
  * 	},
  * 	...
  * ```
+ * 
+ * ## testing
+ * - after installing you can test `xixth` behaviour by calling:
+ * ```shell
+ * npx test-xixth
+ * ```
+ * 
  */
 export { xixth } from './src//xixth.export.mjs';
 /**

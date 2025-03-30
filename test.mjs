@@ -3,12 +3,14 @@
 import { xixth } from 'xixth';
 new xixth({
 	packageName: 'xixth',
-	pathCopyHandler: { testflag: { src: 'test-copy', dest: 'test-paste' } },
+	pathCopyHandlers: { testflag: { src: 'test-copy', dest: 'test-paste' } },
 	flagCallbacks: {
-		beforeCopy: async () => {
+		async beforeCopy(flags) {
+			console.log(flags);
 			console.log('beforeCopy');
 		},
-		afterCopy: async () => {
+		async afterCopy(flags) {
+			console.log(flags);
 			console.log('afterCopy');
 		},
 	},

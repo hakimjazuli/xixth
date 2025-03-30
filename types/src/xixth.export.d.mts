@@ -9,10 +9,22 @@
  * import { xixth } from 'xixth';
  *
  * new xixth({
- * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
+ *		packageName: 'your-package-name',
+ *		pathCopyHandlers:{ // optional
+ *			...flagKeys:{
+ *				src:'dev', dest:'default_dev',
+ *				on:{  // optional if not declared it will be filled with basic console.log upon both condition
+ *					success: async () => { // optional if not declared it will be filled with basic console.log
+ *						// code
+ *					},
+ *					failed: async () => { // optional if not declared it will be filled with basic console.error
+ *						// code
+ *					},
+ *				}
+ *			}}
  * });
  * ```
- * - `pathCopyHandler.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
+ * - `pathCopyHandlers.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
  * - example:
  * ```js
  * // setupFile.mjs
@@ -22,7 +34,7 @@
  *
  * new xixth({
  *		packageName: 'your-package-name',
- *		pathCopyHandler:{devs:{src:'dev', dest:'default_dev'}} // optional
+ *		pathCopyHandlers: { devs: { src: 'dev', dest: 'default_dev' } }
  * });
  * ```
  * >- by calling:
@@ -43,14 +55,14 @@
  *
  * new xixth({
  * 	packageName: 'your-package-name',
- * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
+ * 	pathCopyHandlers: {...flagKeys:{src:'path', dest:'path'}}, // optional
  * 	flagCallbacks: { // optional
- * 		async beforeCopy({ ...flagsKeys }) {
- * 			// code run before pathCopyHandler
- * 		}, // optional
- * 		async afterCopy ({ ...flagsKeys }) {
- * 			// code run after pathCopyHandler
- * 		}, // optional
+ * 		async beforeCopy({ ...flagsKeys }) { // optional
+ * 			// code run before pathCopyHandlers
+ * 		},
+ * 		async afterCopy ({ ...flagsKeys }) { // optional
+ * 			// code run after pathCopyHandlers
+ * 		},
  * 	},
  * });
  * ```
@@ -62,7 +74,7 @@ export class xixth {
      * @param {Object} options
      * @param {string} options.packageName
      * - input with your `packageName`
-     * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
+     * @param {{[key:string]:{src:string, dest:string, on?:{success?:()=>Promise<void>,failed?:()=>Promise<void>}}}} [options.pathCopyHandlers]
      * - export relativePath to project root, works for dirs and files alike;
      * @param {Object} [options.flagCallbacks]
      * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
@@ -70,10 +82,14 @@ export class xixth {
      */
     constructor(options: {
         packageName: string;
-        pathCopyHandler?: {
+        pathCopyHandlers?: {
             [key: string]: {
                 src: string;
                 dest: string;
+                on?: {
+                    success?: () => Promise<void>;
+                    failed?: () => Promise<void>;
+                };
             };
         };
         flagCallbacks?: {
@@ -118,14 +134,23 @@ export class xixth {
      */
     private options;
     /**
+     * @private
+     */
+    private packageName;
+    /**
+     * @private
      * @type {FlagEntry}
      */
-    flags: import("../index.mjs").FlagEntry;
+    private flags;
     /**
      * @param {string} src
      * @param {string} dest
+     * @param {{success?:()=>Promise<void>,failed?:()=>Promise<void>}} [on]
      */
-    copyFiles: (src: string, dest: string) => Promise<void>;
+    copyFiles: (src: string, dest: string, on?: {
+        success?: () => Promise<void>;
+        failed?: () => Promise<void>;
+    }) => Promise<void>;
     /**
      * @private
      */
