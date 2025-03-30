@@ -45,54 +45,19 @@
  * 	packageName: 'your-package-name',
  * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
  * 	flagCallbacks: { // optional
- * 		beforeCopy: async ({ ...flagsKeys }) {
+ * 		async beforeCopy({ ...flagsKeys }) {
  * 			// code run before pathCopyHandler
  * 		}, // optional
- * 		afterCopy: async ({ ...flagsKeys }) {
+ * 		async afterCopy ({ ...flagsKeys }) {
  * 			// code run after pathCopyHandler
  * 		}, // optional
  * 	},
  * });
  * ```
- * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled;
- * >- as of now `xixth` only support key value pair on flags;
+ * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled, as of now `xixth` only support key value pair on flags;
+ * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyFiles` `public method` for general convenience;
  */
 export class xixth {
-    /**
-     * @typedef {import('../index.mjs').FlagEntry} FlagEntry
-     */
-    /**
-     * @private
-     */
-    private static __dirname;
-    /**
-     * @private
-     * @param {string} packageName
-     * @returns {void}
-     */
-    private static generateDirName;
-    static targetDir: string;
-    /**
-     * @param {string} relativePath
-     * @returns {string}
-     */
-    static packagePath: (relativePath: string) => string;
-    /**
-     * @param {string} relativePath
-     * @returns {string}
-     */
-    static projectPath: (relativePath: string) => string;
-    /**
-     * @private
-     * @type {null|xixth}
-     */
-    private static __;
-    /**
-     * @private
-     * @param {string} src
-     * @param {string} dest
-     */
-    private static copyFiles;
     /**
      * @param {Object} options
      * @param {string} options.packageName
@@ -100,8 +65,8 @@ export class xixth {
      * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
      * - export relativePath to project root, works for dirs and files alike;
      * @param {Object} [options.flagCallbacks]
-     * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
-     * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
+     * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
+     * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
      */
     constructor(options: {
         packageName: string;
@@ -112,10 +77,42 @@ export class xixth {
             };
         };
         flagCallbacks?: {
-            beforeCopy?: (flags: import("../index.mjs").FlagEntry) => Promise<void>;
-            afterCopy?: (flags: import("../index.mjs").FlagEntry) => Promise<void>;
+            beforeCopy?: (this: xixth, flags: import("../index.mjs").FlagEntry) => Promise<void>;
+            afterCopy?: (this: xixth, flags: import("../index.mjs").FlagEntry) => Promise<void>;
         };
     });
+    /**
+     * @typedef {import('../index.mjs').FlagEntry} FlagEntry
+     */
+    /**
+     * @private
+     */
+    private packageRoot;
+    /**
+     * @private
+     * @param {string} packageName
+     * @returns {void}
+     */
+    private generateDirName;
+    /**
+     * @private
+     */
+    private projectRoot;
+    /**
+     * @param {string} relativePath
+     * @returns {string}
+     */
+    generatePackageAbsolutePath: (relativePath: string) => string;
+    /**
+     * @param {string} relativePath
+     * @returns {string}
+     */
+    generateProjectAbsolutePath: (relativePath: string) => string;
+    /**
+     * @private
+     * @type {null|xixth}
+     */
+    private __;
     /**
      * @private
      */
@@ -124,6 +121,11 @@ export class xixth {
      * @type {FlagEntry}
      */
     flags: import("../index.mjs").FlagEntry;
+    /**
+     * @param {string} src
+     * @param {string} dest
+     */
+    copyFiles: (src: string, dest: string) => Promise<void>;
     /**
      * @private
      */

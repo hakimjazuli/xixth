@@ -53,17 +53,17 @@ import { tryAsync } from 'vivth';
  * 	packageName: 'your-package-name',
  * 	pathCopyHandler: {...flagKeys:{src:'path', dest:'path'}}, // optional
  * 	flagCallbacks: { // optional
- * 		beforeCopy: async ({ ...flagsKeys }) {
+ * 		async beforeCopy({ ...flagsKeys }) {
  * 			// code run before pathCopyHandler
  * 		}, // optional
- * 		afterCopy: async ({ ...flagsKeys }) {
+ * 		async afterCopy ({ ...flagsKeys }) {
  * 			// code run after pathCopyHandler
  * 		}, // optional
  * 	},
  * });
  * ```
- * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled;
- * >- as of now `xixth` only support key value pair on flags;
+ * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled, as of now `xixth` only support key value pair on flags;
+ * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyFiles` `public method` for general convenience;
  */
 export class xixth {
 	/**
@@ -72,34 +72,37 @@ export class xixth {
 	/**
 	 * @private
 	 */
-	static __dirname = null;
+	packageRoot = null;
 	/**
 	 * @private
 	 * @param {string} packageName
 	 * @returns {void}
 	 */
-	static generateDirName = (packageName) => {
-		if (xixth.__dirname === null) {
+	generateDirName = (packageName) => {
+		if (this.packageRoot === null) {
 			const packageEntry = fileURLToPath(import.meta.resolve(packageName));
-			xixth.__dirname = dirname(packageEntry.split(`${packageName}/`)[0] + packageName);
+			this.packageRoot = dirname(packageEntry.split(`${packageName}/`)[0] + packageName);
 		}
 	};
-	static targetDir = process.env.INIT_CWD || process.cwd();
+	/**
+	 * @private
+	 */
+	projectRoot = process.env.INIT_CWD || process.cwd();
 	/**
 	 * @param {string} relativePath
 	 * @returns {string}
 	 */
-	static packagePath = (relativePath) => join(xixth.__dirname, relativePath);
+	generatePackageAbsolutePath = (relativePath) => join(this.packageRoot, relativePath);
 	/**
 	 * @param {string} relativePath
 	 * @returns {string}
 	 */
-	static projectPath = (relativePath) => join(xixth.targetDir, relativePath);
+	generateProjectAbsolutePath = (relativePath) => join(this.projectRoot, relativePath);
 	/**
 	 * @private
 	 * @type {null|xixth}
 	 */
-	static __ = null;
+	__ = null;
 	/**
 	 * @param {Object} options
 	 * @param {string} options.packageName
@@ -107,19 +110,19 @@ export class xixth {
 	 * @param {{[key:string]:{src:string, dest:string}}} [options.pathCopyHandler]
 	 * - export relativePath to project root, works for dirs and files alike;
 	 * @param {Object} [options.flagCallbacks]
-	 * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
-	 * @param {(flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
+	 * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
+	 * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.afterCopy]
 	 */
 	constructor(options) {
-		if (xixth.__ instanceof xixth) {
-			return xixth.__;
+		if (this.__ instanceof xixth) {
+			return this.__;
 		}
-		xixth.__ = this;
+		this.__ = this;
 		/**
 		 * @private
 		 */
 		this.options = options;
-		xixth.generateDirName(options.packageName);
+		this.generateDirName(options.packageName);
 		/**
 		 * @type {FlagEntry}
 		 */
@@ -127,16 +130,14 @@ export class xixth {
 		this.run();
 	}
 	/**
-	 * @private
 	 * @param {string} src
 	 * @param {string} dest
 	 */
-	static copyFiles = async (src, dest) => {
+	copyFiles = async (src, dest) => {
 		const [_, error] = await tryAsync(async () => {
 			await mkdir(dest, { recursive: true });
 			const entries = await readdir(src, { withFileTypes: true });
 			if (entries.length === 0) {
-				console.log(`📁 Created empty directory: ${dest}`);
 				return;
 			}
 			for (const entry of entries) {
@@ -146,12 +147,12 @@ export class xixth {
 					await this.copyFiles(srcPath, destPath);
 				} else {
 					await copyFile(srcPath, destPath);
-					console.log(`📄 Copied: ${srcPath}`);
+					console.log(`📃 \`xixth\` successfully copy from "${srcPath}" to "${destPath}"`);
 				}
 			}
 		});
 		if (error) {
-			console.error({ error, src, dest, failed: '⚠ unable to copy `src` to `dest`' });
+			console.error(`⚠ \`xixth\` unable to copy "${src}" to "${dest}"`);
 		}
 	};
 	/**
@@ -160,12 +161,12 @@ export class xixth {
 	run = async () => {
 		const { pathCopyHandler = false, flagCallbacks = false } = this.options;
 		const flags = this.flags;
-		const packagePath = xixth.packagePath;
-		const projectPath = xixth.projectPath;
+		const packagePath = this.generatePackageAbsolutePath;
+		const projectPath = this.generateProjectAbsolutePath;
 		if (flagCallbacks !== false) {
 			const { beforeCopy = false } = flagCallbacks;
 			if (beforeCopy !== false) {
-				await beforeCopy(flags);
+				await beforeCopy.call(this, flags);
 			}
 		}
 		if (pathCopyHandler !== false) {
@@ -175,13 +176,13 @@ export class xixth {
 				if (key in flags) {
 					dest = flags[key];
 				}
-				await xixth.copyFiles(packagePath(file.src), projectPath(dest));
+				await this.copyFiles(packagePath(file.src), projectPath(dest));
 			}
 		}
 		if (flagCallbacks !== false) {
 			const { afterCopy = false } = flagCallbacks;
 			if (afterCopy !== false) {
-				await afterCopy(flags);
+				await afterCopy.call(this, flags);
 			}
 		}
 	};

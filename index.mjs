@@ -15,8 +15,10 @@
  * 		"bin-script-name": "bin.mjs"
  * 	},
  * ...
- * >>- you can add your `packageName` on the bin-script-name to avoid global script collision;
  * ```
+ * >>- you can add your `package-name` on the bin-script-name as best practice to avoid global script collision, like 
+ * >>>- 'install-your-package-name', 'starter-your-package-name-starter-name' for project starter, or
+ * >>>- 'run-your-packge-name' if the main focus is to run the binary;
  * >- `postInstall` on `scripts` object, which can be called using `npm i package-name`;
  * ```json
  * // package.json
