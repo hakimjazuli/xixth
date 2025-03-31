@@ -10,9 +10,9 @@ import { tryAsync } from 'vivth';
 /**
  * @description
  * how to use:
- * - create your `setupFile`
+ * - inside your `script-file-name-with-ext.mjs`
  * ```js
- * // setupFile.mjs
+ * // script-file-name-with-ext.mjs
  * #!/usr/bin/env node
  * // @ts-check
  * import { xixth } from 'xixth';
@@ -36,7 +36,7 @@ import { tryAsync } from 'vivth';
  * - `pathCopyHandlers.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
  * - example:
  * ```js
- * // setupFile.mjs
+ * // script-file-name-with-ext.mjs
  * #!/usr/bin/env node
  * // @ts-check
  * import { xixth } from 'xixth';
@@ -51,9 +51,9 @@ import { tryAsync } from 'vivth';
  * npx your-package-name -devsflag custom_dev
  * ```
  * >- will overwrite user `devsflag.dest` with `"custom_dev"`;
- * - and you can also handle flags like this:
+ * - you can also handle flags like with `flagCallbacks`:
  * ```js
- * // setupFile.mjs
+ * // script-file-name-with-ext.mjs
  * #!/usr/bin/env node
  * // @ts-check
  * import { xixth } from 'xixth';
@@ -72,7 +72,7 @@ import { tryAsync } from 'vivth';
  * });
  * ```
  * >- either `flagCallbacks` are independent from `pathCopyHandlers`, and still be called(if filled), even if `pathCopyHandlers` is not filled;
- * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled, as of now `xixth` only support key value pair on flags;
+ * >- `flagCallbacks`'s `flagsKeys` is destructured flags which hold its value, make sure to add default value(incase of if the flags is not filled), as of now `xixth` only support key value pair on flags;
  * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, `makeDir`, and `copyPath` `public method` for general convenience;
  */
 export class xixth {
