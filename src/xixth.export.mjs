@@ -73,7 +73,7 @@ import { tryAsync } from 'vivth';
  * ```
  * >- either `flagCallbacks` are independent from `pathCopyHandlers`, and still be called(if filled), even if `pathCopyHandlers` is not filled;
  * >- flagsKeys is destructured flags and its value, make sure to add default value if the flags is not filled, as of now `xixth` only support key value pair on flags;
- * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, and `copyPath` `public method` for general convenience;
+ * >- see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, `makeDir`, and `copyPath` `public method` for general convenience;
  */
 export class xixth {
 	/**
@@ -145,6 +145,18 @@ export class xixth {
 		this.run();
 	}
 	/**
+	 * @param {string} dest
+	 * @returns {Promise<[void, Error|undefined]>}
+	 */
+	makeDir = async (dest) => {
+		return await tryAsync(async () => {
+			if (existsSync(dest)) {
+				return;
+			}
+			await mkdir(dest, { recursive: true });
+		});
+	};
+	/**
 	 * @param {string} src
 	 * @param {string} dest
 	 * @param {{success?:()=>Promise<void>,failed?:()=>Promise<void>}} [on]
@@ -152,8 +164,12 @@ export class xixth {
 	copyPath = async (src, dest, on) => {
 		const packageName = this.packageName;
 		const [_, error] = await tryAsync(async () => {
-			if (statSync(src).isDirectory() && !existsSync(dest)) {
-				await mkdir(dest, { recursive: true });
+			if (statSync(src).isDirectory()) {
+				const [_, error_] = await this.makeDir(dest);
+				if (error_) {
+					console.error(`⚠ \`${packageName}\` unable to create dir at "${dest}"`);
+					throw error_;
+				}
 			}
 			const entries = await readdir(src, { withFileTypes: true });
 			if (entries.length === 0) {
