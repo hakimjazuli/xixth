@@ -164,24 +164,27 @@ export class xixth {
 	copyPath = async (src, dest, on) => {
 		const packageName = this.packageName;
 		const [_, error] = await tryAsync(async () => {
-			if (statSync(src).isDirectory()) {
+			const stats = statSync(src);
+			if (stats.isFile()) {
+				await copyFile(src, dest);
+			} else if (stats.isDirectory()) {
 				const [_, error_] = await this.makeDir(dest);
 				if (error_) {
 					console.error(`⚠ \`${packageName}\` unable to create dir at "${dest}"`);
 					throw error_;
 				}
-			}
-			const entries = await readdir(src, { withFileTypes: true });
-			if (entries.length === 0) {
-				return;
-			}
-			for (const entry of entries) {
-				const srcPath = join(src, entry.name);
-				const destPath = join(dest, entry.name);
-				if (entry.isDirectory()) {
-					await this.copyPath(srcPath, destPath, on);
-				} else {
-					await copyFile(srcPath, destPath);
+				const entries = await readdir(src, { withFileTypes: true });
+				if (entries.length === 0) {
+					return;
+				}
+				for (const entry of entries) {
+					const srcPath = join(src, entry.name);
+					const destPath = join(dest, entry.name);
+					if (entry.isDirectory()) {
+						await this.copyPath(srcPath, destPath, on);
+					} else {
+						await copyFile(srcPath, destPath);
+					}
 				}
 			}
 		});
@@ -189,7 +192,10 @@ export class xixth {
 			if ('failed' in on) {
 				await on.failed();
 			} else {
-				console.error(`⚠ \`${packageName}\` unable to copy from "${src}" to "${dest}"`);
+				console.error({
+					error,
+					message: `⚠ \`${packageName}\` unable to copy from "${src}" to "${dest}"`,
+				});
 			}
 			return;
 		}
