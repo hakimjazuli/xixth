@@ -10,7 +10,7 @@ import { tryAsync } from 'vivth';
 /**
  * @description
  * how to use:
- * - inside your `script-file-name-with-ext.mjs`
+ * - inside your newly generated `script-file-name-with-ext.mjs`
  * ```js
  * // script-file-name-with-ext.mjs
  * #!/usr/bin/env node
