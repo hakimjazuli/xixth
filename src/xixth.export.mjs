@@ -23,11 +23,15 @@ import { tryAsync } from 'vivth';
  *			...flagKeys:{
  *				src:'dev', dest:'default_dev',
  *				on:{  // optional if not declared it will be filled with basic console.log upon both condition
- *					success: async () => { // optional if not declared it will be filled with basic console.log
+ *					success: async ({src, dest}) => { // optional
  *						// code
+ *						// if not declared it will be filled with basic console.log,
+ *						// each file and dir;
  *					},
- *					failed: async () => { // optional if not declared it will be filled with basic console.error
+ *					failed: async ({src, dest}) => { // optional
  *						// code
+ *						// if not declared it will be filled with basic console.error,
+ *						// each file and dir
  *					},
  *				}
  *			}}
@@ -117,7 +121,7 @@ export class xixth {
 	 * @param {Object} options
 	 * @param {string} options.packageName
 	 * - input with your `packageName`
-	 * @param {{[key:string]:{src:string, dest:string, on?:{success?:()=>Promise<void>,failed?:()=>Promise<void>}}}} [options.pathCopyHandlers]
+	 * @param {{[key:string]:{src:string, dest:string, on?:{success?:(option:{src:string, dest:string})=>Promise<void>,failed?:(option:{src:string, dest:string})=>Promise<void>}}}} [options.pathCopyHandlers]
 	 * - export relativePath to project root, works for dirs and files alike;
 	 * @param {Object} [options.flagCallbacks]
 	 * @param {(this:xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
@@ -159,9 +163,9 @@ export class xixth {
 	/**
 	 * @param {string} src
 	 * @param {string} dest
-	 * @param {{success?:()=>Promise<void>,failed?:()=>Promise<void>}} [on]
+	 * @param {{success?:(options:{src:string, dest:string})=>Promise<void>,failed?:(options:{src:string, dest:string})=>Promise<void>}} [on]
 	 */
-	copyPath = async (src, dest, on) => {
+	copyPath = async (src, dest, on = {}) => {
 		const packageName = this.packageName;
 		const [_, error] = await tryAsync(async () => {
 			const stats = statSync(src);
@@ -190,7 +194,7 @@ export class xixth {
 		});
 		if (error) {
 			if ('failed' in on) {
-				await on.failed();
+				await on.failed({ src, dest });
 			} else {
 				console.error({
 					error,
@@ -200,7 +204,7 @@ export class xixth {
 			return;
 		}
 		if ('success' in on) {
-			await on.success();
+			await on.success({ src, dest });
 		} else {
 			console.log(`📃 \`${packageName}\` successfully copy from "${src}" to "${dest}"`);
 		}
