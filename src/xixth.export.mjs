@@ -170,6 +170,8 @@ export class xixth {
 		const [_, error] = await tryAsync(async () => {
 			const stats = statSync(src);
 			if (stats.isFile()) {
+				const dir = dirname(dest);
+				await mkdir(dir, { recursive: true });
 				await copyFile(src, dest);
 			} else if (stats.isDirectory()) {
 				const [_, error_] = await this.makeDir(dest);
