@@ -36,7 +36,7 @@
 		"typescript": "^5.8.2",
 		"xixth": "link:xixth"
 	},
-	"peerDependencies": {
-		"vivth": "^0.9.2"
+	"dependencies": {
+		"vivth": "latest"
 	}
 }

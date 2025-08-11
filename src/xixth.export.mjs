@@ -5,7 +5,7 @@ import { existsSync, statSync } from 'fs';
 import { getFlags } from './getFlags.mjs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { tryAsync } from 'vivth';
+import { TryAsync } from 'vivth';
 
 /**
  * @description
@@ -153,7 +153,7 @@ export class xixth {
 	 * @returns {Promise<[void, Error|undefined]>}
 	 */
 	makeDir = async (dest) => {
-		return await tryAsync(async () => {
+		return await TryAsync(async () => {
 			if (existsSync(dest)) {
 				return;
 			}
@@ -167,7 +167,7 @@ export class xixth {
 	 */
 	copyPath = async (src, dest, on = {}) => {
 		const packageName = this.packageName;
-		const [_, error] = await tryAsync(async () => {
+		const [_, error] = await TryAsync(async () => {
 			const stats = statSync(src);
 			if (stats.isFile()) {
 				const dir = dirname(dest);
