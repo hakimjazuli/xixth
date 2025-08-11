@@ -37,6 +37,6 @@
 		"xixth": "link:xixth"
 	},
 	"dependencies": {
-		"vivth": "latest"
+		"vivth": "^0.11.1"
 	}
 }
