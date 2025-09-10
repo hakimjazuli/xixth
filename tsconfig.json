@@ -11,5 +11,5 @@
 		"skipLibCheck": true,
 		"baseUrl": "."
 	},
-	"include": ["./index.mjs"]
+	"include": ["./index.mjs", "./dev/doc.mjs"]
 }

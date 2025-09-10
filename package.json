@@ -27,16 +27,15 @@
 	},
 	"homepage": "https://github.com/hakimjazuli/xixth#readme",
 	"scripts": {
-		"dev": "concurrently \"bun --watch ./documentation.mjs\" \"bun tsc --watch\""
+		"dev": "concurrently 'bun --watch ./dev/doc.mjs' 'bun tsc --watch'"
 	},
 	"devDependencies": {
-		"@html_first/js_lib_template": "link:@html_first/js_lib_template",
-		"@types/bun": "^1.2.8",
-		"concurrently": "^9.1.2",
-		"typescript": "^5.8.2",
+		"@types/bun": "^1.2.21",
+		"concurrently": "^9.2.1",
+		"typescript": "^5.9.2",
 		"xixth": "link:xixth"
 	},
 	"dependencies": {
-		"vivth": "^0.11.2"
+		"vivth": "^1.0.3"
 	}
 }

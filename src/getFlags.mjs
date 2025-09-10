@@ -6,10 +6,9 @@ export class getFlags {
 	 */
 	/**
 	 * Parses command-line arguments into a Set<{name, value}>
-	 * @private
 	 * @returns {FlagEntry}
 	 */
-	static parseArgs = () => {
+	static #parseArgs = () => {
 		const args = process.argv.slice(2);
 		/**
 		 * @type {FlagEntry}
@@ -25,17 +24,16 @@ export class getFlags {
 		return flags;
 	};
 	/**
-	 * @private
 	 * @type {null|FlagEntry}
 	 */
-	static flags_ = null;
+	static #flags_ = null;
 	/**
 	 * @type {FlagEntry}
 	 */
 	static get flags() {
-		if (getFlags.flags_ === null) {
-			getFlags.flags_ = getFlags.parseArgs();
+		if (getFlags.#flags_ === null) {
+			getFlags.#flags_ = getFlags.#parseArgs();
 		}
-		return getFlags.flags_;
+		return getFlags.#flags_;
 	}
 }

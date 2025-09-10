@@ -1,4 +1,2 @@
-export { xixth } from "./src//xixth.export.mjs";
-export type FlagEntry = {
-    [flagName: string]: string;
-};
+export { Xixth } from "./src/Xixth.mjs";
+export type FlagEntry = import("./src/FlagEntry.mjs").FlagEntry;

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // @ts-check
 
-import { writeFileSync, existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import { xixth } from 'xixth';
-import { trySync } from 'vivth';
+import { writeFile, exists, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { Xixth } from 'xixth';
+import { Console, TryAsync } from 'vivth';
 
 const createCopyInstance = new (class {
 	/**
@@ -12,84 +13,87 @@ const createCopyInstance = new (class {
 	 * @param {string} a0.n
 	 * @param {string} a0.f
 	 * @param {string} a0.projectPath
-	 * @returns {void}
+	 * @returns {Promise<void>}
 	 */
-	create({ n, f, projectPath }) {
+	create = async ({ n, f, projectPath }) => {
 		const jsonPath = join(projectPath, 'package.json');
-		const create = this.isPackageJsonExist(join(projectPath, 'package.json'));
-		if (create && !this.createPackageJson(n, f, jsonPath)) {
+		const create = await this.isPackageJsonExist(join(projectPath, 'package.json'));
+		if (create && !(await this.#createPackageJson(n, f, jsonPath))) {
 			return;
-		} else if (!this.editPackageJson(n, f, jsonPath)) {
+		} else if (!(await this.#editPackageJson(n, f, jsonPath))) {
 			return;
 		}
-		console.log(`📃 \`xixth\` successfully add binary definition to "${jsonPath}"`);
+		Console.log(`📃 \`xixth\` successfully add binary definition to "${jsonPath}"`);
 		const binaryFilePath = join(projectPath, f);
-		const [_, error] = trySync(() => {
-			if (existsSync(binaryFilePath)) {
-				console.log(`📃 \`xixth\` binary file already exist:"${binaryFilePath}"`);
+		TryAsync(async () => {
+			if (await exists(binaryFilePath)) {
+				Console.log(`📃 \`xixth\` binary file already exist:"${binaryFilePath}"`);
 				return;
 			}
-			writeFileSync(
+			await writeFile(
 				binaryFilePath,
 				`#!/usr/bin/env node
 // @ts-check
 
 import { xixth } from 'xixth';
-
+import { Paths } from 'vivth';
+	 
+new Paths({
+	// root: process?.env?.INIT_CWD ?? process?.cwd(),
+});
 new xixth({
 	// options
 })
 `,
 				{ encoding: 'utf8' }
 			);
-			console.log(`📃 \`xixth\` successfully create binary file:"${binaryFilePath}"`);
+			Console.log(`📃 \`xixth\` successfully create binary file:"${binaryFilePath}"`);
+		}).then(([_, error]) => {
+			if (!error) {
+				return;
+			}
+			Console.error(`⚠ \`xixth\` error during creating binary file:"${binaryFilePath}"`);
 		});
-		if (error) {
-			console.error(`⚠ \`xixth\` error during creating binary file:"${binaryFilePath}"`);
-			return;
-		}
-	}
+	};
 	/**
 	 * @private
 	 * @param {string} projectPath
-	 * @returns {boolean}
+	 * @returns {Promise<boolean>}
 	 */
-	isPackageJsonExist(projectPath) {
-		if (existsSync(projectPath)) {
+	isPackageJsonExist = async (projectPath) => {
+		if (await exists(projectPath)) {
 			return false;
 		}
 		return true;
-	}
+	};
 	/**
-	 * @private
 	 * @param {string} binaryScriptName
 	 * @param {string} fileName
 	 * @param {string} jsonPath
-	 * @returns {boolean}
+	 * @returns {Promise<boolean>}
 	 */
-	createPackageJson(binaryScriptName, fileName, jsonPath) {
-		const [_, error] = trySync(() => {
-			return writeFileSync(jsonPath, JSON.stringify({ bin: { [binaryScriptName]: fileName } }), {
+	#createPackageJson = async (binaryScriptName, fileName, jsonPath) => {
+		const [_, error] = await TryAsync(async () => {
+			return await writeFile(jsonPath, JSON.stringify({ bin: { [binaryScriptName]: fileName } }), {
 				encoding: 'utf8',
 			});
 		});
 		if (error) {
-			console.error(`⚠ \`xixth\` error during creating file:"${jsonPath}"`);
+			Console.error(`⚠ \`xixth\` error during creating file:"${jsonPath}"`);
 			return false;
 		}
 		return true;
-	}
+	};
 	/**
-	 * @private
 	 * @param {string} binaryScriptName
 	 * @param {string} fileName
 	 * @param {string} jsonPath
-	 * @returns {boolean}
+	 * @returns {Promise<boolean>}
 	 */
-	editPackageJson(binaryScriptName, fileName, jsonPath) {
-		const [_, error] = trySync(() => {
+	#editPackageJson = async (binaryScriptName, fileName, jsonPath) => {
+		const [_, error] = await TryAsync(async () => {
 			let bin = {};
-			const jsonString = readFileSync(jsonPath, { encoding: 'utf8' });
+			const jsonString = await readFile(jsonPath, { encoding: 'utf8' });
 			const json = JSON.parse(jsonString);
 			if ('bin' in json) {
 				bin = { ...json.bin, [binaryScriptName]: fileName };
@@ -97,23 +101,23 @@ new xixth({
 				bin = { [binaryScriptName]: fileName };
 			}
 			const newJsonString = JSON.stringify({ ...json, bin });
-			return writeFileSync(jsonPath, newJsonString, {
+			return await writeFile(jsonPath, newJsonString, {
 				encoding: 'utf8',
 			});
 		});
 		if (error) {
-			console.error(`⚠ \`xixth\` error during editing file "${jsonPath}"`);
+			Console.error(`⚠ \`xixth\` error during editing file "${jsonPath}"`);
 			return false;
 		}
 		return true;
-	}
+	};
 })();
 
-new xixth({
+new Xixth({
 	packageName: 'xixth',
 	flagCallbacks: {
 		async beforeCopy({ n = 'my-package-new-bin', f = 'my-package-new-bin.mjs' }) {
-			createCopyInstance.create({ n, f, projectPath: this.generateProjectAbsolutePath('') });
+			await createCopyInstance.create({ n, f, projectPath: this.generateProjectAbsolutePath('') });
 		},
 	},
 });
