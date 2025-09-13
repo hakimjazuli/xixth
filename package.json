@@ -27,7 +27,7 @@
 	},
 	"homepage": "https://github.com/hakimjazuli/xixth#readme",
 	"scripts": {
-		"dev": "concurrently 'bun --watch ./dev/doc.mjs' 'bun tsc --watch'"
+		"dev": "concurrently 'bun ./dev/doc.mjs' 'bun tsc --watch'"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.2.21",
@@ -36,6 +36,6 @@
 		"xixth": "link:xixth"
 	},
 	"dependencies": {
-		"vivth": "^1.0.6"
+		"vivth": "^1.1.1"
 	}
 }
