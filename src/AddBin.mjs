@@ -59,8 +59,9 @@ export class AddBin {
 			}
 			const [, errorWrite] = await FileSafe.write(
 				binaryFilePath,
-				overrideXixthStarterCode ??
-					`#!/usr/bin/env node
+				overrideXixthStarterCode
+					? overrideXixthStarterCode
+					: `#!/usr/bin/env node
 // @ts-check
 
 import { Xixth } from 'xixth';
@@ -74,12 +75,14 @@ new Xixth({
 			if (errorWrite) {
 				throw errorWrite;
 			}
-			Console.log(`📃 \`Xixth\` successfully create binary file:"${binaryFilePath}"`);
+			Console.log(`📃 \`Xixth\` successfully create js binary reference file:"${binaryFilePath}"`);
 		});
 		if (!error) {
 			return true;
 		}
-		Console.error(`⚠ \`Xixth\` error during creating binary file:"${binaryFilePath}"`);
+		Console.error(
+			`⚠ \`Xixth\` error during creating js binary reference file:"${binaryFilePath}"`
+		);
 		return false;
 	};
 	/**
