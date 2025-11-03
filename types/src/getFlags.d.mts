@@ -1,18 +1,18 @@
 export class getFlags {
     /**
-     * @typedef {import('../index.mjs').FlagEntry} FlagEntry
+     * @typedef {import('./FlagEntry.mjs').FlagEntry} FlagEntry_
      */
     /**
      * Parses command-line arguments into a Set<{name, value}>
-     * @returns {FlagEntry}
+     * @returns {FlagEntry_}
      */
     static #parseArgs: () => import("./FlagEntry.mjs").FlagEntry;
     /**
-     * @type {null|FlagEntry}
+     * @type {null|FlagEntry_}
      */
     static #flags_: null | import("./FlagEntry.mjs").FlagEntry;
     /**
-     * @type {FlagEntry}
+     * @type {FlagEntry_}
      */
     static get flags(): import("./FlagEntry.mjs").FlagEntry;
 }

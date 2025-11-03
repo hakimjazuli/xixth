@@ -1,5 +1,6 @@
 // @ts-check
 
+import { env, cwd } from 'node:process';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,74 +11,24 @@ import { getFlags } from './getFlags.mjs';
 
 /**
  * @description
- * how to use:
- * - inside your newly generated `script-file-name-with-ext.mjs`
- * @example
+ * - main class of `xixth`;
  */
 export class Xixth {
 	/**
 	 * @typedef {import('./FlagEntry.mjs').FlagEntry} FlagEntry
+	 * @typedef {import('./PathCopyHandler.mjs').PathCopyHandler} PathCopyHandler
 	 */
 	/**
-	 * @type {string}
+	 * @type {Xixth|undefined}
 	 */
-	#packageRoot;
-	/**
-	 * @param {string} packageName
-	 * @returns {void}
-	 */
-	#generateDirName = (packageName) => {
-		if (!this.#packageRoot) {
-			const packageEntry = fileURLToPath(import.meta.resolve(packageName));
-			this.#packageRoot = dirname(packageEntry.split(`${packageName}/`)[0] + packageName);
-		}
-	};
-	#projectRoot = Paths.root;
-	/**
-	 * @description
-	 * @param {string} relativePath
-	 * @returns {string}
-	 * @example
-	 * ...
-	 * // must not be arrow function to accept `this` binding;
-	 * async beforeCopy({ ...flagsKeys }) {
-	 * 	this.generatePackageAbsolutePath(dest);
-	 * },
-	 * // must not be arrow function to accept `this` binding;
-	 * async afterCopy ({ ...flagsKeys }) {
-	 * 	this.generatePackageAbsolutePath(dest);
-	 * },
-	 * ...
-	 */
-	generatePackageAbsolutePath = (relativePath) => join(this.#packageRoot, relativePath);
-	/**
-	 * @description
-	 * @param {string} relativePath
-	 * @returns {string}
-	 * @example
-	 * ...
-	 * // must not be arrow function to accept `this` binding;
-	 * async beforeCopy({ ...flagsKeys }) {
-	 * 	this.generateProjectAbsolutePath(dest);
-	 * },
-	 * // must not be arrow function to accept `this` binding;
-	 * async afterCopy ({ ...flagsKeys }) {
-	 * 	this.generateProjectAbsolutePath(dest);
-	 * },
-	 * ...
-	 */
-	generateProjectAbsolutePath = (relativePath) => join(this.#projectRoot, relativePath);
-	/**
-	 * @type {Xixth}
-	 */
-	#instance;
+	static #instance;
 	/**
 	 * @description
 	 * - create `Xixth` instance;
 	 * @param {Object} options
 	 * @param {string} options.packageName
 	 * - input with your `packageName`
-	 * @param {{[key:string]:{src:string, dest:string, on?:{success?:(option:{src:string, dest:string})=>Promise<void>,failed?:(option:{src:string, dest:string})=>Promise<void>}}}} [options.pathCopyHandlers]
+	 * @param {{[key:string]: PathCopyHandler }} [options.pathCopyHandlers]
 	 * - export relativePath to project root, works for dirs and files alike;
 	 * @param {Object} [options.flagCallbacks]
 	 * @param {(this:Xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
@@ -87,17 +38,15 @@ export class Xixth {
 	 * @example
 	 * // script-file-name-with-ext.mjs
 	 * #!/usr/bin/env node
-	 * import { Xixth } from 'xixth';
-	 * import { Paths } from 'vivth';
 	 *
-	 * new Paths({
-	 * 	root: process?.env?.INIT_CWD ?? process?.cwd(),
-	 * });
+	 * import { Xixth } from 'xixth';
+	 *
 	 * new Xixth({
 	 *		packageName: 'your-package-name',
 	 *		pathCopyHandlers:{ // optional
 	 *			...flagKeys:{
-	 *				src:'dev', dest:'default_dev',
+	 *				src:'dev',
+	 * 				dest:'default_dev',
 	 *				on:{  // optional if not declared it will be filled with basic Console.log upon both condition
 	 *					success: async ({src, dest}) => { // optional
 	 *						// code
@@ -115,12 +64,9 @@ export class Xixth {
 	 * // `pathCopyHandlers.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
 	 * // script-file-name-with-ext.mjs
 	 * #!/usr/bin/env node
-	 * import { Xixth } from 'xixth';
-	 * import { Paths } from 'vivth';
 	 *
-	 * new Paths({
-	 * 	root: process?.env?.INIT_CWD ?? process?.cwd(),
-	 * });
+	 * import { Xixth } from 'xixth';
+	 *
 	 * new Xixth({
 	 *		packageName: 'your-package-name',
 	 *		pathCopyHandlers: { devsflag: { src: 'dev', dest: 'default_dev' } }
@@ -131,12 +77,9 @@ export class Xixth {
 	 * // - you can also handle flags like with `flagCallbacks`:
 	 * // script-file-name-with-ext.mjs
 	 * #!/usr/bin/env node
-	 * import { Xixth } from 'xixth';
-	 * import { Paths } from 'vivth';
 	 *
-	 * new Paths({
-	 * 	root: process?.env?.INIT_CWD ?? process?.cwd(),
-	 * });
+	 * import { Xixth } from 'xixth';
+	 *
 	 * new Xixth({
 	 * 	packageName: 'your-package-name',
 	 * 	pathCopyHandlers: {...flagKeys:{src:'path', dest:'path'}}, // optional
@@ -154,25 +97,72 @@ export class Xixth {
 	 * // see that `flagCallbacks.beforeCopy` and `flagCallbacks.afterCopy` are `regullar function` and not `arrow function`, since `xixth instance` is bindeded to its `this`, which have methods: `generatePackageAbsolutePath`, `generateProjectAbsolutePath`, `makeDir`, and `copyPath` `public method` for general convenience;
 	 */
 	constructor(options) {
-		if (this.#instance instanceof Xixth) {
-			return this.#instance;
+		if (Xixth.#instance instanceof Xixth) {
+			return Xixth.#instance;
 		}
-		this.#instance = this;
+		new Paths({
+			root: env.INIT_CWD ?? cwd(),
+		});
+		Xixth.#instance = this;
 		this.#options = { pathCopyHandlers: false, flagCallbacks: false, ...options };
 		this.#packageName = options.packageName;
-		this.#generateDirName(options.packageName);
-
-		this.#flags = getFlags.flags;
 		this.#run();
 	}
 	/**
+	 * @type {string|undefined}
+	 */
+	#packageRoot_;
+	/**
 	 * @type {string}
 	 */
-	#packageName;
+	get #packageRoot() {
+		if (!this.#packageRoot_) {
+			const packageName = Paths.normalize(this.#options?.packageName ?? '');
+			const packageEntry = Paths.normalize(fileURLToPath(import.meta.resolve(packageName)));
+			this.#packageRoot_ = dirname(packageEntry.split(`/${packageName}/`)[0] + `/${packageName}`);
+		}
+		return this.#packageRoot_;
+	}
 	/**
-	 * @type {FlagEntry}
+	 * @description
+	 * @param {string} relativePath
+	 * @returns {string}
+	 * @example
+	 * // on flagCallbacks block
+	 * ...
+	 * // must be regular function to accept `this` binding;
+	 * async beforeCopy({ ...flagsKeys }) {
+	 * 	this.generatePackageAbsolutePath(dest);
+	 * },
+	 * // must be regular function to accept `this` binding;
+	 * async afterCopy ({ ...flagsKeys }) {
+	 * 	this.generatePackageAbsolutePath(dest);
+	 * },
+	 * ...
 	 */
-	#flags;
+	generatePackageAbsolutePath = (relativePath) => join(this.#packageRoot, relativePath);
+	/**
+	 * @description
+	 * @param {string} relativePath
+	 * @returns {string}
+	 * @example
+	 * // on flagCallbacks block
+	 * ...
+	 * // must be regular function to accept `this` binding;
+	 * async beforeCopy({ ...flagsKeys }) {
+	 * 	this.generateProjectAbsolutePath(dest);
+	 * },
+	 * // must be regular function to accept `this` binding;
+	 * async afterCopy ({ ...flagsKeys }) {
+	 * 	this.generateProjectAbsolutePath(dest);
+	 * },
+	 * ...
+	 */
+	generateProjectAbsolutePath = (relativePath) => join(Paths.root ?? '', relativePath);
+	/**
+	 * @type {string|undefined}
+	 */
+	#packageName;
 	/**
 	 * @property {string} packageName
 	 * - input with your `packageName`
@@ -187,14 +177,14 @@ export class Xixth {
 	 * @description
 	 * - makeDir recursively;
 	 * @param {string} dest
-	 * @returns {Promise<[void, Error|undefined]>}
+	 * @returns {ReturnType<typeof TryAsync<void>>}
 	 * @example
 	 * ...
-	 * // must not be arrow function to accept `this` binding;
+	 * // must be regular function to accept `this` binding;
 	 * async beforeCopy({ ...flagsKeys }) {
 	 * 	const [_, error] = await this.makeDir(dest);
 	 * },
-	 * // must not be arrow function to accept `this` binding;
+	 * // must be regular function to accept `this` binding;
 	 * async afterCopy ({ ...flagsKeys }) {
 	 * 	const [_, error] = await this.makeDir(dest);
 	 * },
@@ -214,13 +204,13 @@ export class Xixth {
 	 * @returns {Promise<void>}
 	 * @example
 	 * ...
-	 * // must not be arrow function to accept `this` binding;
+	 * // must be regular function to accept `this` binding;
 	 * async beforeCopy({ ...flagsKeys }) {
 	 *  	this.copyPath(src, dest, {
 	 * 		...on
 	 * 	});
 	 * },
-	 * // must not be arrow function to accept `this` binding;
+	 * // must be regular function to accept `this` binding;
 	 * async afterCopy ({ ...flagsKeys }) {
 	 * 	this.copyPath(src, dest, {
 	 * 		...on
@@ -230,7 +220,7 @@ export class Xixth {
 	 */
 	copyPath = async (src, dest, on = {}) => {
 		const packageName = this.#packageName;
-		const [_, error] = await TryAsync(async () => {
+		const [, error] = await TryAsync(async () => {
 			const stats = await stat(src);
 			if (stats.isFile()) {
 				const dir = dirname(dest);
@@ -258,7 +248,7 @@ export class Xixth {
 			}
 		});
 		if (error) {
-			if (on && 'failed' in on) {
+			if (on && on.failed) {
 				await on.failed({ src, dest });
 			} else {
 				Console.error({
@@ -268,7 +258,7 @@ export class Xixth {
 			}
 			return;
 		}
-		if (on && 'success' in on) {
+		if (on && on.success) {
 			await on.success({ src, dest });
 		} else {
 			Console.info(`📃 \`${packageName}\` successfully copy from "${src}" to "${dest}"`);
@@ -276,7 +266,7 @@ export class Xixth {
 	};
 	#run = async () => {
 		const { pathCopyHandlers = false, flagCallbacks = false } = this.#options ?? {};
-		const flags = this.#flags;
+		const flags = getFlags.flags;
 		const packagePath = this.generatePackageAbsolutePath;
 		const projectPath = this.generateProjectAbsolutePath;
 		if (flagCallbacks !== false && flagCallbacks !== true) {
@@ -288,9 +278,12 @@ export class Xixth {
 		if (pathCopyHandlers !== false && pathCopyHandlers !== true) {
 			for (const key in pathCopyHandlers) {
 				const file = pathCopyHandlers[key];
+				if (!file) {
+					continue;
+				}
 				let { dest, src, on = {} } = file;
 				if (key in flags) {
-					dest = flags[key];
+					dest = flags[key] ?? '';
 				}
 				await this.copyPath(packagePath(src), projectPath(dest), on);
 			}

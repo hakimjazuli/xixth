@@ -1,0 +1,139 @@
+// @ts-check
+
+import process from 'node:process';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { format } from 'prettier';
+import { Console, FileSafe, Paths, TryAsync } from 'vivth';
+
+new Paths({
+	root: process.env.INIT_CWD ?? process.cwd(),
+});
+
+/**
+ * @description
+ * - used by xixth-add-bin;
+ */
+export class AddBin {
+	/**
+	 * @description
+	 * - procedural js bin script generator for packages;
+	 * @param {string} scriptName
+	 * - binary script name;
+	 * - will be added to `package.json` `bin`;
+	 * @param {string} fileName
+	 * - file name with extentionName;
+	 * - can also be nested inside folder;
+	 * @param {string} [overrideXixthStarterCode]
+	 * - default: use xixth standard code;
+	 * - string: write file with inputed string;
+	 * @returns {Promise<boolean>}
+	 * @example
+	 * import { AddBin } from 'xixth';
+	 *
+	 * (async () => {
+	 *  await AddBin.new('my-script-name', 'my-script-name.mjs');
+	 * })()
+	 */
+	static new = async (scriptName, fileName, overrideXixthStarterCode = '') => {
+		const projectPath = Paths.root;
+		if (!projectPath) {
+			return false;
+		}
+		const jsonPath = join(projectPath, 'package.json');
+		const [, errorExist] = await FileSafe.exist(jsonPath);
+		if (errorExist && !(await AddBin.#succedToCreatePackageJson(scriptName, fileName, jsonPath))) {
+			return false;
+		}
+		if (!(await AddBin.#succedToEditPackageJson(scriptName, fileName, jsonPath))) {
+			return false;
+		}
+		Console.log(`📃 \`Xixth\` successfully add binary definition to "${jsonPath}"`);
+		const binaryFilePath = join(projectPath, fileName);
+		const [, error] = await TryAsync(async () => {
+			const [, errorExist] = await FileSafe.exist(binaryFilePath);
+			if (!errorExist) {
+				Console.warn(`📃 \`Xixth\` binary file already exist:"${binaryFilePath}"`);
+				return;
+			}
+			const [, errorWrite] = await FileSafe.write(
+				binaryFilePath,
+				overrideXixthStarterCode ??
+					`#!/usr/bin/env node
+// @ts-check
+
+import { Xixth } from 'xixth';
+
+new Xixth({
+  // options
+})
+`,
+				{ encoding: 'utf-8' }
+			);
+			if (errorWrite) {
+				throw errorWrite;
+			}
+			Console.log(`📃 \`Xixth\` successfully create binary file:"${binaryFilePath}"`);
+		});
+		if (!error) {
+			return true;
+		}
+		Console.error(`⚠ \`Xixth\` error during creating binary file:"${binaryFilePath}"`);
+		return false;
+	};
+	/**
+	 * @param {string} binaryScriptName
+	 * @param {string} fileName
+	 * @param {string} jsonPath
+	 * @returns {Promise<boolean>}
+	 * - return succed or not
+	 */
+	static #succedToCreatePackageJson = async (binaryScriptName, fileName, jsonPath) => {
+		const [, error] = await TryAsync(async () => {
+			return await FileSafe.write(
+				jsonPath,
+				await format(JSON.stringify({ bin: { [binaryScriptName]: fileName } }), {
+					parser: 'json-stringify',
+				}),
+				{
+					encoding: 'utf8',
+				}
+			);
+		});
+		if (error) {
+			Console.error(`⚠ \`Xixth\` error during creating file:"${jsonPath}"`);
+			return false;
+		}
+		return true;
+	};
+	/**
+	 * @param {string} binaryScriptName
+	 * @param {string} fileName
+	 * @param {string} jsonPath
+	 * @returns {Promise<boolean>}
+	 */
+	static #succedToEditPackageJson = async (binaryScriptName, fileName, jsonPath) => {
+		const [_, error] = await TryAsync(async () => {
+			let bin = {};
+			const jsonString = await readFile(jsonPath, { encoding: 'utf8' });
+			const json = JSON.parse(jsonString);
+			if ('bin' in json) {
+				bin = { ...json.bin, [binaryScriptName]: fileName };
+			} else {
+				bin = { [binaryScriptName]: fileName };
+			}
+			const newJsonString = await format(JSON.stringify({ ...json, bin }), {
+				parser: 'json-stringify',
+			});
+			return await FileSafe.write(jsonPath, newJsonString, {
+				encoding: 'utf8',
+			});
+		});
+		if (error) {
+			Console.error(`⚠ \`Xixth\` error during editing file "${jsonPath}"`);
+			return false;
+		}
+		return true;
+	};
+}

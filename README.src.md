@@ -2,7 +2,7 @@
 
 - are a helper for:
   - starter project repository through npm;
-  - binary creation;
+  - bin script registration(to `package.json`);
 
 ## note
 
@@ -13,7 +13,7 @@
 
 ## installation
 
-on terminal
+- on terminal
 
 ```shell
 npm i xixth
@@ -21,7 +21,7 @@ npm i xixth
 
 ## register binary script to your package
 
-on terminal:
+- on terminal:
 
 ```shell
 npx xixth-add-bin -n your-script-name -f script-file-name-with-ext.mjs
@@ -31,18 +31,17 @@ npx xixth-add-bin -n your-script-name -f script-file-name-with-ext.mjs
 - best practice of naming `your-script-name` is to add your `package-name` to avoid global script
   name collision;
 
-edit your newly created `script file`;
-
-- use [xixth documentation](#xixth);
+- edit your newly created `script file`;
+  > - use [xixth documentation](#xixth);
 
 ## uses
 
-you can run this binary whether its:
+- you can run this binary whether its:
 
-- installed through `npm`;
-- symlinked using `link` package manager `api`;
+  > - installed through `npm`;
+  > - symlinked using `link` package manager `api`;
 
-which then you can calls it using:
+- which then you can calls it using:
 
 ```shell
 npx your-script-name

@@ -1,34 +1,41 @@
 // @ts-check
 
+import { argv } from 'node:process';
+
 export class getFlags {
 	/**
-	 * @typedef {import('../index.mjs').FlagEntry} FlagEntry
+	 * @typedef {import('./FlagEntry.mjs').FlagEntry} FlagEntry_
 	 */
 	/**
 	 * Parses command-line arguments into a Set<{name, value}>
-	 * @returns {FlagEntry}
+	 * @returns {FlagEntry_}
 	 */
 	static #parseArgs = () => {
-		const args = process.argv.slice(2);
+		const args = argv.slice(2);
 		/**
-		 * @type {FlagEntry}
+		 * @type {FlagEntry_}
 		 */
 		const flags = {};
 		for (let i = 0; i < args.length; i++) {
-			if (args[i].startsWith('-')) {
-				const name = args[i].replace(/^-+/, '');
-				const value = args[i + 1] && !args[i + 1].startsWith('-') ? args[++i] : '';
+			const arg = args[i];
+			if (!arg) {
+				continue;
+			}
+			if (arg.startsWith('-')) {
+				const name = arg.replace(/^-+/, '');
+				const value = args[i + 1] && !args[i + 1]?.startsWith('-') ? args[++i] : '';
+				// @ts-expect-error
 				flags[name] = value;
 			}
 		}
 		return flags;
 	};
 	/**
-	 * @type {null|FlagEntry}
+	 * @type {null|FlagEntry_}
 	 */
 	static #flags_ = null;
 	/**
-	 * @type {FlagEntry}
+	 * @type {FlagEntry_}
 	 */
 	static get flags() {
 		if (getFlags.#flags_ === null) {

@@ -6,7 +6,14 @@
  * this library is made and distributed under MIT license;
  */
 
+export { AddBin } from './src/AddBin.mjs';
 export { Xixth } from './src/Xixth.mjs';
 /**
  * @typedef {import('./src/FlagEntry.mjs').FlagEntry} FlagEntry
+ */
+/**
+ * @typedef {import('./src/HandleOnCopyHandler.mjs').HandleOnCopyHandler} HandleOnCopyHandler
+ */
+/**
+ * @typedef {import('./src/PathCopyHandler.mjs').PathCopyHandler} PathCopyHandler
  */

@@ -1,17 +1,23 @@
 /**
  * @description
- * how to use:
- * - inside your newly generated `script-file-name-with-ext.mjs`
- * @example
+ * - main class of `xixth`;
  */
 export class Xixth {
+    /**
+     * @typedef {import('./FlagEntry.mjs').FlagEntry} FlagEntry
+     * @typedef {import('./PathCopyHandler.mjs').PathCopyHandler} PathCopyHandler
+     */
+    /**
+     * @type {Xixth|undefined}
+     */
+    static #instance: Xixth | undefined;
     /**
      * @description
      * - create `Xixth` instance;
      * @param {Object} options
      * @param {string} options.packageName
      * - input with your `packageName`
-     * @param {{[key:string]:{src:string, dest:string, on?:{success?:(option:{src:string, dest:string})=>Promise<void>,failed?:(option:{src:string, dest:string})=>Promise<void>}}}} [options.pathCopyHandlers]
+     * @param {{[key:string]: PathCopyHandler }} [options.pathCopyHandlers]
      * - export relativePath to project root, works for dirs and files alike;
      * @param {Object} [options.flagCallbacks]
      * @param {(this:Xixth,flags:FlagEntry)=>Promise<void>} [options.flagCallbacks.beforeCopy]
@@ -21,17 +27,15 @@ export class Xixth {
      * @example
      * // script-file-name-with-ext.mjs
      * #!/usr/bin/env node
-     * import { Xixth } from 'xixth';
-     * import { Paths } from 'vivth';
      *
-     * new Paths({
-     * 	root: process?.env?.INIT_CWD ?? process?.cwd(),
-     * });
+     * import { Xixth } from 'xixth';
+     *
      * new Xixth({
      *		packageName: 'your-package-name',
      *		pathCopyHandlers:{ // optional
      *			...flagKeys:{
-     *				src:'dev', dest:'default_dev',
+     *				src:'dev',
+     * 				dest:'default_dev',
      *				on:{  // optional if not declared it will be filled with basic Console.log upon both condition
      *					success: async ({src, dest}) => { // optional
      *						// code
@@ -49,12 +53,9 @@ export class Xixth {
      * // `pathCopyHandlers.flagKeys` are identifier for the user to overwrite its `dest` path with their own `custom path`;
      * // script-file-name-with-ext.mjs
      * #!/usr/bin/env node
-     * import { Xixth } from 'xixth';
-     * import { Paths } from 'vivth';
      *
-     * new Paths({
-     * 	root: process?.env?.INIT_CWD ?? process?.cwd(),
-     * });
+     * import { Xixth } from 'xixth';
+     *
      * new Xixth({
      *		packageName: 'your-package-name',
      *		pathCopyHandlers: { devsflag: { src: 'dev', dest: 'default_dev' } }
@@ -65,12 +66,9 @@ export class Xixth {
      * // - you can also handle flags like with `flagCallbacks`:
      * // script-file-name-with-ext.mjs
      * #!/usr/bin/env node
-     * import { Xixth } from 'xixth';
-     * import { Paths } from 'vivth';
      *
-     * new Paths({
-     * 	root: process?.env?.INIT_CWD ?? process?.cwd(),
-     * });
+     * import { Xixth } from 'xixth';
+     *
      * new Xixth({
      * 	packageName: 'your-package-name',
      * 	pathCopyHandlers: {...flagKeys:{src:'path', dest:'path'}}, // optional
@@ -90,37 +88,25 @@ export class Xixth {
     constructor(options: {
         packageName: string;
         pathCopyHandlers?: {
-            [key: string]: {
-                src: string;
-                dest: string;
-                on?: {
-                    success?: (option: {
-                        src: string;
-                        dest: string;
-                    }) => Promise<void>;
-                    failed?: (option: {
-                        src: string;
-                        dest: string;
-                    }) => Promise<void>;
-                };
-            };
-        };
+            [key: string]: import("./PathCopyHandler.mjs").PathCopyHandler;
+        } | undefined;
         flagCallbacks?: {
-            beforeCopy?: (this: Xixth, flags: import("./FlagEntry.mjs").FlagEntry) => Promise<void>;
-            afterCopy?: (this: Xixth, flags: import("./FlagEntry.mjs").FlagEntry) => Promise<void>;
-        };
+            beforeCopy?: ((this: Xixth, flags: import("./FlagEntry.mjs").FlagEntry) => Promise<void>) | undefined;
+            afterCopy?: ((this: Xixth, flags: import("./FlagEntry.mjs").FlagEntry) => Promise<void>) | undefined;
+        } | undefined;
     });
     /**
      * @description
      * @param {string} relativePath
      * @returns {string}
      * @example
+     * // on flagCallbacks block
      * ...
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async beforeCopy({ ...flagsKeys }) {
      * 	this.generatePackageAbsolutePath(dest);
      * },
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async afterCopy ({ ...flagsKeys }) {
      * 	this.generatePackageAbsolutePath(dest);
      * },
@@ -132,12 +118,13 @@ export class Xixth {
      * @param {string} relativePath
      * @returns {string}
      * @example
+     * // on flagCallbacks block
      * ...
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async beforeCopy({ ...flagsKeys }) {
      * 	this.generateProjectAbsolutePath(dest);
      * },
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async afterCopy ({ ...flagsKeys }) {
      * 	this.generateProjectAbsolutePath(dest);
      * },
@@ -148,20 +135,20 @@ export class Xixth {
      * @description
      * - makeDir recursively;
      * @param {string} dest
-     * @returns {Promise<[void, Error|undefined]>}
+     * @returns {ReturnType<typeof TryAsync<void>>}
      * @example
      * ...
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async beforeCopy({ ...flagsKeys }) {
      * 	const [_, error] = await this.makeDir(dest);
      * },
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async afterCopy ({ ...flagsKeys }) {
      * 	const [_, error] = await this.makeDir(dest);
      * },
      * ...
      */
-    makeDir: (dest: string) => Promise<[void, Error | undefined]>;
+    makeDir: (dest: string) => ReturnType<typeof TryAsync<void>>;
     /**
      * @description
      * - copy path, dir or file alike, to dest;
@@ -171,13 +158,13 @@ export class Xixth {
      * @returns {Promise<void>}
      * @example
      * ...
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async beforeCopy({ ...flagsKeys }) {
      *  	this.copyPath(src, dest, {
      * 		...on
      * 	});
      * },
-     * // must not be arrow function to accept `this` binding;
+     * // must be regular function to accept `this` binding;
      * async afterCopy ({ ...flagsKeys }) {
      * 	this.copyPath(src, dest, {
      * 		...on
@@ -197,3 +184,4 @@ export class Xixth {
     }) => Promise<void>;
     #private;
 }
+import { TryAsync } from 'vivth';
