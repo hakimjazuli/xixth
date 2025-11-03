@@ -59,8 +59,10 @@ export class AddBin {
 			}
 			const [, errorWrite] = await FileSafe.write(
 				binaryFilePath,
-				overrideXixthStarterCode ??
-					`#!/usr/bin/env node
+				overrideXixthStarterCode
+					? `#!/usr/bin/env node
+${overrideXixthStarterCode}`
+					: `#!/usr/bin/env node
 // @ts-check
 
 import { Xixth } from 'xixth';
