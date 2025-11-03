@@ -36,7 +36,7 @@ export class AddBin {
 	 *  await AddBin.new('my-script-name', 'my-script-name.mjs');
 	 * })()
 	 */
-	static new = async (scriptName, fileName, overrideXixthStarterCode = '') => {
+	static new = async (scriptName, fileName, overrideXixthStarterCode = undefined) => {
 		const projectPath = Paths.root;
 		if (!projectPath) {
 			return false;
@@ -59,9 +59,8 @@ export class AddBin {
 			}
 			const [, errorWrite] = await FileSafe.write(
 				binaryFilePath,
-				overrideXixthStarterCode
-					? overrideXixthStarterCode
-					: `#!/usr/bin/env node
+				overrideXixthStarterCode ??
+					`#!/usr/bin/env node
 // @ts-check
 
 import { Xixth } from 'xixth';
