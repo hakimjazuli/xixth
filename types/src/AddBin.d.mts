@@ -4,8 +4,35 @@
  */
 export class AddBin {
     /**
+     * @type {string}
+     */
+    static #root_: string;
+    /**
+     * @returns {string}
+     */
+    static get #root(): string;
+    /**
      * @description
-     * - procedural js bin script generator for packages;
+     * - procedural js bin script registrar for packages;
+     * @param {string} scriptName
+     * - binary script name;
+     * - will be added to `package.json` `bin`;
+     * @param {string} fileName
+     * - file name with extentionName;
+     * - can also be nested inside folder;
+     * @returns {Promise<boolean>}
+     * @example
+     * import { AddBin } from 'xixth';
+     *
+     * (async () => {
+     *  await AddBin.registerReference('my-script-name', 'my-script-name.mjs');
+     * })()
+     */
+    static registerReference: (scriptName: string, fileName: string) => Promise<boolean>;
+    static #binDeclaration: string;
+    /**
+     * @description
+     * - procedural js bin script registrar and generator for packages;
      * @param {string} scriptName
      * - binary script name;
      * - will be added to `package.json` `bin`;
@@ -20,7 +47,11 @@ export class AddBin {
      * import { AddBin } from 'xixth';
      *
      * (async () => {
-     *  await AddBin.new('my-script-name', 'my-script-name.mjs');
+     *  await AddBin.new(
+     * 		'my-script-name',
+     * 		'my-script-name.mjs',
+     * 		// optional
+     * 	);
      * })()
      */
     static new: (scriptName: string, fileName: string, overrideXixthStarterCode?: string) => Promise<boolean>;

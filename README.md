@@ -61,9 +61,35 @@ npx your-script-name
 
 - used by xixth-add-bin;
 
+#### reference:`AddBin.registerReference`
+
+- procedural js bin script registrar for packages;
+
+```js
+/**
+ * @param {string} scriptName
+ * - binary script name;
+ * - will be added to `package.json` `bin`;
+ * @param {string} fileName
+ * - file name with extentionName;
+ * - can also be nested inside folder;
+ * @returns {Promise<boolean>}
+ */
+```
+
+- <i>example</i>:
+
+```js
+import { AddBin } from "xixth";
+
+(async () => {
+  await AddBin.registerReference("my-script-name", "my-script-name.mjs");
+})();
+```
+
 #### reference:`AddBin.new`
 
-- procedural js bin script generator for packages;
+- procedural js bin script registrar and generator for packages;
 
 ```js
 /**
@@ -86,7 +112,11 @@ npx your-script-name
 import { AddBin } from "xixth";
 
 (async () => {
-  await AddBin.new("my-script-name", "my-script-name.mjs");
+  await AddBin.new(
+    "my-script-name",
+    "my-script-name.mjs",
+    // optional
+  );
 })();
 ```
 

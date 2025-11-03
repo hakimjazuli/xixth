@@ -7,18 +7,61 @@ import { join } from 'node:path';
 import { format } from 'prettier';
 import { Console, FileSafe, Paths, TryAsync } from 'vivth';
 
-new Paths({
-	root: process.env.INIT_CWD ?? process.cwd(),
-});
-
 /**
  * @description
  * - used by xixth-add-bin;
  */
 export class AddBin {
 	/**
+	 * @type {string}
+	 */
+	static #root_;
+	/**
+	 * @returns {string}
+	 */
+	static get #root() {
+		if (!AddBin.#root_) {
+			new Paths({
+				root: process.env.INIT_CWD ?? process.cwd(),
+			});
+			AddBin.#root_ = Paths.root ?? '';
+		}
+		return AddBin.#root_;
+	}
+	/**
 	 * @description
-	 * - procedural js bin script generator for packages;
+	 * - procedural js bin script registrar for packages;
+	 * @param {string} scriptName
+	 * - binary script name;
+	 * - will be added to `package.json` `bin`;
+	 * @param {string} fileName
+	 * - file name with extentionName;
+	 * - can also be nested inside folder;
+	 * @returns {Promise<boolean>}
+	 * @example
+	 * import { AddBin } from 'xixth';
+	 *
+	 * (async () => {
+	 *  await AddBin.registerReference('my-script-name', 'my-script-name.mjs');
+	 * })()
+	 */
+	static registerReference = async (scriptName, fileName) => {
+		const projectPath = AddBin.#root;
+		const jsonPath = join(projectPath, 'package.json');
+		const [, errorExist] = await FileSafe.exist(jsonPath);
+		if (errorExist && !(await AddBin.#succedToCreatePackageJson(scriptName, fileName, jsonPath))) {
+			return false;
+		}
+		if (!(await AddBin.#succedToEditPackageJson(scriptName, fileName, jsonPath))) {
+			return false;
+		}
+		Console.log(`📃 \`Xixth\` successfully add binary definition to "${jsonPath}"`);
+		return true;
+	};
+	static #binDeclaration = '#!/usr/bin/env node';
+	/**
+	 * @description
+	 * - procedural js bin script registrar and generator for packages;
 	 * @param {string} scriptName
 	 * - binary script name;
 	 * - will be added to `package.json` `bin`;
@@ -33,23 +76,16 @@ export class AddBin {
 	 * import { AddBin } from 'xixth';
 	 *
 	 * (async () => {
-	 *  await AddBin.new('my-script-name', 'my-script-name.mjs');
+	 *  await AddBin.new(
+	 * 		'my-script-name',
+	 * 		'my-script-name.mjs',
+	 * 		// optional
+	 * 	);
 	 * })()
 	 */
 	static new = async (scriptName, fileName, overrideXixthStarterCode = undefined) => {
-		const projectPath = Paths.root;
-		if (!projectPath) {
-			return false;
-		}
-		const jsonPath = join(projectPath, 'package.json');
-		const [, errorExist] = await FileSafe.exist(jsonPath);
-		if (errorExist && !(await AddBin.#succedToCreatePackageJson(scriptName, fileName, jsonPath))) {
-			return false;
-		}
-		if (!(await AddBin.#succedToEditPackageJson(scriptName, fileName, jsonPath))) {
-			return false;
-		}
-		Console.log(`📃 \`Xixth\` successfully add binary definition to "${jsonPath}"`);
+		await AddBin.registerReference(scriptName, fileName);
+		const projectPath = AddBin.#root;
 		const binaryFilePath = join(projectPath, fileName);
 		const [, error] = await TryAsync(async () => {
 			const [, errorExist] = await FileSafe.exist(binaryFilePath);
@@ -57,12 +93,13 @@ export class AddBin {
 				Console.warn(`📃 \`Xixth\` binary file already exist:"${binaryFilePath}"`);
 				return;
 			}
+			const binDeclaration = this.#binDeclaration;
 			const [, errorWrite] = await FileSafe.write(
 				binaryFilePath,
 				overrideXixthStarterCode
-					? `#!/usr/bin/env node
+					? `${binDeclaration}
 ${overrideXixthStarterCode}`
-					: `#!/usr/bin/env node
+					: `${binDeclaration}
 // @ts-check
 
 import { Xixth } from 'xixth';
