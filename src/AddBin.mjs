@@ -42,7 +42,10 @@ export class AddBin {
 	 * import { AddBin } from 'xixth';
 	 *
 	 * (async () => {
-	 *  await AddBin.registerReference('my-script-name', 'my-script-name.mjs');
+	 *  await AddBin.registerReference(
+	 * 		'my-script-name',
+	 * 		'my-script-name.mjs'
+	 * 	);
 	 * })()
 	 */
 	static registerReference = async (scriptName, fileName) => {
