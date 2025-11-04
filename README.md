@@ -73,6 +73,13 @@ npx your-script-name
  * @param {string} fileName
  * - file name with extentionName;
  * - can also be nested inside folder;
+ * @param {boolean|string} [scriptsExtension]
+ * - default: `false`, does nothing;
+ * - `string`: generate reference for `fileName` and `executable` on `package.json` `scripts`;
+ * >- direct runing js `scripts.${scriptName}`:`fileName`;
+ * >- running binary file `scripts.${scriptName}-${withScripts.value}`: fileName but with `${withScripts}` as extention;
+ * >>- extentions should be started with `dot`/`.`;
+ * - true: same as `string` input but doesn't generate true compiled binary targets;
  * @returns {Promise<boolean>}
  */
 ```
@@ -83,19 +90,26 @@ npx your-script-name
 import { AddBin } from "xixth";
 
 (async () => {
-  await AddBin.registerReference("my-script-name", "my-script-name.mjs");
+  await AddBin.registerReference(
+    "my-script-name",
+    "my-script-name.mjs",
+    // '.exe',
+    // false,
+    // true, // best for generating
+  );
 })();
 ```
 
 #### reference:`AddBin.new`
 
-- procedural js bin script registrar and generator for packages;
+- procedural js `bin.${scriptName}` script registrar and generator for packages;
+- also register `scripts.${scriptName}` for testing;
 
 ```js
 /**
  * @param {string} scriptName
  * - binary script name;
- * - will be added to `package.json` `bin`;
+ * - will be added to `package.json` `bin` and `scripts`;
  * @param {string} fileName
  * - file name with extentionName;
  * - can also be nested inside folder;
@@ -115,7 +129,7 @@ import { AddBin } from "xixth";
   await AddBin.new(
     "my-script-name",
     "my-script-name.mjs",
-    // optional
+    // optional file content
   );
 })();
 ```

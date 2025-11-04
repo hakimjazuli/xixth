@@ -12,10 +12,6 @@
 	"type": "module",
 	"main": "index.mjs",
 	"types": "./types/index.d.mts",
-	"bin": {
-		"xixth-test": "./xixth-test.mjs",
-		"xixth-add-bin": "./xixth-add-bin.mjs"
-	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/hakimjazuli/xixth.git"
@@ -26,6 +22,10 @@
 		"url": "https://github.com/hakimjazuli/xixth/issues"
 	},
 	"homepage": "https://github.com/hakimjazuli/xixth#readme",
+	"bin": {
+		"xixth-test": "./xixth-test.mjs",
+		"xixth-add-bin": "./xixth-add-bin.mjs"
+	},
 	"scripts": {
 		"dev": "concurrently 'bun ./dev/doc.mjs' 'bun tsc --watch'"
 	},
