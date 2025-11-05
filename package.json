@@ -30,13 +30,13 @@
 		"dev": "concurrently 'bun ./dev/doc.mjs' 'bun tsc --watch'"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.2.21",
+		"@types/bun": "^1.3.1",
 		"concurrently": "^9.2.1",
-		"typescript": "^5.9.2",
+		"typescript": "^5.9.3",
 		"xixth": "link:xixth"
 	},
 	"dependencies": {
 		"prettier": "^3.6.2",
-		"vivth": "^1.3.6"
+		"vivth": "^1.3.7"
 	}
 }
