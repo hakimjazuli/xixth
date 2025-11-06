@@ -67,19 +67,18 @@ npx your-script-name
 
 ```js
 /**
- * @param {string} scriptName
+ * @param {string} binScriptName
  * - binary script name;
  * - will be added to `package.json` `bin`;
- * @param {string} fileName
+ * @param {string} absoluteFilePath
  * - file name with extentionName;
  * - can also be nested inside folder;
- * @param {boolean|string} [scriptsExtension]
- * - default: `false`, does nothing;
- * - `string`: generate reference for `fileName` and `executable` on `package.json` `scripts`;
- * >- direct runing js `scripts.${scriptName}`:`fileName`;
- * >- running binary file `scripts.${scriptName}-${withScripts.value}`: fileName but with `${withScripts}` as extention;
- * >>- extentions should be started with `dot`/`.`;
- * - true: same as `string` input but doesn't generate true compiled binary targets;
+ * @param {false|string} [stringifiedScript]
+ * - default, false: does nothing;
+ * - string: add `scripts.${binScriptName}`:`${stringifiedScript}`
+ * @param {false|string} [stringifiedExec]
+ * - default, false: does nothing;
+ * - string: add `scripts.${binScriptName}-exe`:`${stringifiedExec}`
  * @returns {Promise<boolean>}
  */
 ```
@@ -93,9 +92,7 @@ import { AddBin } from "xixth";
   await AddBin.registerReference(
     "my-script-name",
     "my-script-name.mjs",
-    // '.exe',
-    // false,
-    // true, // best for generating
+    // optional
   );
 })();
 ```
@@ -110,12 +107,16 @@ import { AddBin } from "xixth";
  * @param {string} scriptName
  * - binary script name;
  * - will be added to `package.json` `bin` and `scripts`;
- * @param {string} fileName
+ * @param {string} absoluteFilePath
  * - file name with extentionName;
  * - can also be nested inside folder;
- * @param {string} [overrideXixthStarterCode]
+ * @param {Object} options
+ * @param {string} [options.overrideXixthStarterCode]
  * - default: use xixth standard code;
  * - string: write file with inputed string;
+ * @param {string} [options.runtime]
+ * - runtime to call the fileName;
+ * - default: "node";
  * @returns {Promise<boolean>}
  */
 ```

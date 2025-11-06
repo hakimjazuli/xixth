@@ -2,7 +2,7 @@
 
 import process from 'node:process';
 import { readFile } from 'node:fs/promises';
-import { extname, join } from 'node:path';
+import { join } from 'node:path';
 
 import { format } from 'prettier';
 import { Console, FileSafe, Paths, TryAsync } from 'vivth';
@@ -31,19 +31,18 @@ export class AddBin {
 	/**
 	 * @description
 	 * - procedural js bin script registrar for packages;
-	 * @param {string} scriptName
+	 * @param {string} binScriptName
 	 * - binary script name;
 	 * - will be added to `package.json` `bin`;
-	 * @param {string} fileName
+	 * @param {string} absoluteFilePath
 	 * - file name with extentionName;
 	 * - can also be nested inside folder;
-	 * @param {boolean|string} [scriptsExtension]
-	 * - default: `false`, does nothing;
-	 * - `string`: generate reference for `fileName` and `executable` on `package.json` `scripts`;
-	 * >- direct runing js `scripts.${scriptName}`:`fileName`;
-	 * >- running binary file `scripts.${scriptName}-${withScripts.value}`: fileName but with `${withScripts}` as extention;
-	 * >>- extentions should be started with `dot`/`.`;
-	 * - true: same as `string` input but doesn't generate true compiled binary targets;
+	 * @param {false|string} [stringifiedScript]
+	 * - default, false: does nothing;
+	 * - string: add `scripts.${binScriptName}`:`${stringifiedScript}`
+	 * @param {false|string} [stringifiedExec]
+	 * - default, false: does nothing;
+	 * - string: add `scripts.${binScriptName}-exe`:`${stringifiedExec}`
 	 * @returns {Promise<boolean>}
 	 * @example
 	 * import { AddBin } from 'xixth';
@@ -52,28 +51,44 @@ export class AddBin {
 	 *  await AddBin.registerReference(
 	 * 		'my-script-name',
 	 * 		'my-script-name.mjs',
-	 * 		// '.exe',
-	 * 		// false,
-	 * 		// true, // best for generating
+	 * 		// optional
 	 * 	);
 	 * })()
 	 */
-	static registerReference = async (scriptName, fileName, scriptsExtension = false) => {
+	static registerReference = async (
+		binScriptName,
+		absoluteFilePath,
+		stringifiedScript = false,
+		stringifiedExec = false
+	) => {
 		const projectPath = AddBin.#root;
 		const jsonPath = join(projectPath, 'package.json');
 		const [, errorExist] = await FileSafe.exist(jsonPath);
-		if (errorExist && !(await AddBin.#succedToCreatePackageJson(scriptName, fileName, jsonPath))) {
+		if (
+			errorExist &&
+			!(await AddBin.#succeedToCreatePackageJson(binScriptName, absoluteFilePath, jsonPath))
+		) {
 			return false;
 		}
 		if (
-			!(await AddBin.#succedToEditPackageJson(scriptName, fileName, jsonPath, scriptsExtension))
+			!(await AddBin.#succeedToEditPackageJson(
+				binScriptName,
+				absoluteFilePath,
+				jsonPath,
+				stringifiedScript,
+				stringifiedExec
+			))
 		) {
 			return false;
 		}
 		Console.log(`📃 \`Xixth\` successfully add binary definition to "${jsonPath}"`);
 		return true;
 	};
-	static #binDeclaration = '#!/usr/bin/env node';
+	/**
+	 * - auto prefixer for binary def file;
+	 * @type {'#!/usr/bin/env node'}
+	 */
+	static binDeclaration = '#!/usr/bin/env node';
 	/**
 	 * @description
 	 * - procedural js `bin.${scriptName}` script registrar and generator for packages;
@@ -81,12 +96,16 @@ export class AddBin {
 	 * @param {string} scriptName
 	 * - binary script name;
 	 * - will be added to `package.json` `bin` and `scripts`;
-	 * @param {string} fileName
+	 * @param {string} absoluteFilePath
 	 * - file name with extentionName;
 	 * - can also be nested inside folder;
-	 * @param {string} [overrideXixthStarterCode]
+	 * @param {Object} options
+	 * @param {string} [options.overrideXixthStarterCode]
 	 * - default: use xixth standard code;
 	 * - string: write file with inputed string;
+	 * @param {string} [options.runtime]
+	 * - runtime to call the fileName;
+	 * - default: "node";
 	 * @returns {Promise<boolean>}
 	 * @example
 	 * import { AddBin } from 'xixth';
@@ -99,17 +118,21 @@ export class AddBin {
 	 * 	);
 	 * })()
 	 */
-	static new = async (scriptName, fileName, overrideXixthStarterCode = undefined) => {
-		await AddBin.registerReference(scriptName, fileName, true);
+	static new = async (
+		scriptName,
+		absoluteFilePath,
+		{ overrideXixthStarterCode = undefined, runtime = 'node' }
+	) => {
+		await AddBin.registerReference(scriptName, absoluteFilePath, `${runtime} ${absoluteFilePath}`);
 		const projectPath = AddBin.#root;
-		const binaryFilePath = join(projectPath, fileName);
+		const binaryFilePath = join(projectPath, absoluteFilePath);
 		const [, error] = await TryAsync(async () => {
 			const [, errorExist] = await FileSafe.exist(binaryFilePath);
 			if (!errorExist) {
 				Console.warn(`📃 \`Xixth\` binary file already exist:"${binaryFilePath}"`);
 				return;
 			}
-			const binDeclaration = this.#binDeclaration;
+			const binDeclaration = this.binDeclaration;
 			const [, errorWrite] = await FileSafe.write(
 				binaryFilePath,
 				overrideXixthStarterCode
@@ -141,16 +164,15 @@ new Xixth({
 	};
 	/**
 	 * @param {string} binaryScriptName
-	 * @param {string} fileName
+	 * @param {string} absoluteFilePath
 	 * @param {string} jsonPath
 	 * @returns {Promise<boolean>}
-	 * - return succed or not
 	 */
-	static #succedToCreatePackageJson = async (binaryScriptName, fileName, jsonPath) => {
+	static #succeedToCreatePackageJson = async (binaryScriptName, absoluteFilePath, jsonPath) => {
 		const [, error] = await TryAsync(async () => {
 			return await FileSafe.write(
 				jsonPath,
-				await format(JSON.stringify({ bin: { [binaryScriptName]: fileName } }), {
+				await format(JSON.stringify({ bin: { [binaryScriptName]: absoluteFilePath } }), {
 					parser: 'json-stringify',
 				}),
 				{
@@ -168,14 +190,16 @@ new Xixth({
 	 * @param {string} binaryScriptName
 	 * @param {string} fileName
 	 * @param {string} jsonPath
-	 * @param {boolean|string} [scriptsExtension]
+	 * @param {boolean|string} [stringifiedScript]
+	 * @param {boolean|string} [stringifiedExec]
 	 * @returns {Promise<boolean>}
 	 */
-	static #succedToEditPackageJson = async (
+	static #succeedToEditPackageJson = async (
 		binaryScriptName,
 		fileName,
 		jsonPath,
-		scriptsExtension = false
+		stringifiedScript = false,
+		stringifiedExec = false
 	) => {
 		const [_, error] = await TryAsync(async () => {
 			const jsonString = await readFile(jsonPath, { encoding: 'utf8' });
@@ -187,26 +211,11 @@ new Xixth({
 				bin = { ...bin };
 			}
 			const newJSON = { ...json, bin };
-			if (scriptsExtension !== false) {
-				const scripts = {
-					[binaryScriptName]: fileName,
-				};
-				if (scriptsExtension !== true) {
-					scripts[`${binaryScriptName}-${scriptsExtension.replace(/\./, '')}`] = fileName.replace(
-						extname(fileName),
-						scriptsExtension
-					);
-				}
-				if ('scripts' in json) {
-					newJSON.scripts = {
-						...json.scripts,
-						...scripts,
-					};
-				} else {
-					newJSON.scripts = {
-						...scripts,
-					};
-				}
+			if (stringifiedScript) {
+				newJSON.scripts = { ...json.scripts, [binaryScriptName]: stringifiedScript };
+			}
+			if (stringifiedExec) {
+				newJSON.scripts = { ...json.scripts, [`${binaryScriptName}-exe`]: stringifiedExec };
 			}
 			const newJsonString = await format(JSON.stringify(newJSON), {
 				parser: 'json-stringify',

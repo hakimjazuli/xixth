@@ -6,11 +6,11 @@ export class getFlags {
      * Parses command-line arguments into a Set<{name, value}>
      * @returns {FlagEntry_}
      */
-    static #parseArgs: () => import("./FlagEntry.mjs").FlagEntry;
+    static "__#private@#parseArgs": () => import("./FlagEntry.mjs").FlagEntry;
     /**
      * @type {null|FlagEntry_}
      */
-    static #flags_: null | import("./FlagEntry.mjs").FlagEntry;
+    static "__#private@#flags_": null | import("./FlagEntry.mjs").FlagEntry;
     /**
      * @type {FlagEntry_}
      */

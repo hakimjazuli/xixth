@@ -10,7 +10,7 @@ export class Xixth {
     /**
      * @type {Xixth|undefined}
      */
-    static #instance: Xixth | undefined;
+    static "__#private@#instance": Xixth | undefined;
     /**
      * @description
      * - create `Xixth` instance;
