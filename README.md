@@ -70,7 +70,7 @@ npx your-script-name
  * @param {string} binScriptName
  * - binary script name;
  * - will be added to `package.json` `bin`;
- * @param {string} absoluteFilePath
+ * @param {string} relativeFilePathFromProject
  * - file name with extentionName;
  * - can also be nested inside folder;
  * @param {false|string} [stringifiedScript]
@@ -107,7 +107,7 @@ import { AddBin } from "xixth";
  * @param {string} scriptName
  * - binary script name;
  * - will be added to `package.json` `bin` and `scripts`;
- * @param {string} absoluteFilePath
+ * @param {string} relativeFilePathFromProject
  * - file name with extentionName;
  * - can also be nested inside folder;
  * @param {Object} options

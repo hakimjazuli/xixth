@@ -34,7 +34,7 @@ export class AddBin {
 	 * @param {string} binScriptName
 	 * - binary script name;
 	 * - will be added to `package.json` `bin`;
-	 * @param {string} absoluteFilePath
+	 * @param {string} relativeFilePathFromProject
 	 * - file name with extentionName;
 	 * - can also be nested inside folder;
 	 * @param {false|string} [stringifiedScript]
@@ -57,7 +57,7 @@ export class AddBin {
 	 */
 	static registerReference = async (
 		binScriptName,
-		absoluteFilePath,
+		relativeFilePathFromProject,
 		stringifiedScript = false,
 		stringifiedExec = false
 	) => {
@@ -66,14 +66,18 @@ export class AddBin {
 		const [, errorExist] = await FileSafe.exist(jsonPath);
 		if (
 			errorExist &&
-			!(await AddBin.#succeedToCreatePackageJson(binScriptName, absoluteFilePath, jsonPath))
+			!(await AddBin.#succeedToCreatePackageJson(
+				binScriptName,
+				relativeFilePathFromProject,
+				jsonPath
+			))
 		) {
 			return false;
 		}
 		if (
 			!(await AddBin.#succeedToEditPackageJson(
 				binScriptName,
-				absoluteFilePath,
+				relativeFilePathFromProject,
 				jsonPath,
 				stringifiedScript,
 				stringifiedExec
@@ -96,7 +100,7 @@ export class AddBin {
 	 * @param {string} scriptName
 	 * - binary script name;
 	 * - will be added to `package.json` `bin` and `scripts`;
-	 * @param {string} absoluteFilePath
+	 * @param {string} relativeFilePathFromProject
 	 * - file name with extentionName;
 	 * - can also be nested inside folder;
 	 * @param {Object} options
@@ -120,12 +124,16 @@ export class AddBin {
 	 */
 	static new = async (
 		scriptName,
-		absoluteFilePath,
+		relativeFilePathFromProject,
 		{ overrideXixthStarterCode = undefined, runtime = 'node' }
 	) => {
-		await AddBin.registerReference(scriptName, absoluteFilePath, `${runtime} ${absoluteFilePath}`);
+		await AddBin.registerReference(
+			scriptName,
+			relativeFilePathFromProject,
+			`${runtime} ${relativeFilePathFromProject}`
+		);
 		const projectPath = AddBin.#root;
-		const binaryFilePath = join(projectPath, absoluteFilePath);
+		const binaryFilePath = join(projectPath, relativeFilePathFromProject);
 		const [, error] = await TryAsync(async () => {
 			const [, errorExist] = await FileSafe.exist(binaryFilePath);
 			if (!errorExist) {
@@ -164,15 +172,19 @@ new Xixth({
 	};
 	/**
 	 * @param {string} binaryScriptName
-	 * @param {string} absoluteFilePath
+	 * @param {string} relativeFilePathFromProject
 	 * @param {string} jsonPath
 	 * @returns {Promise<boolean>}
 	 */
-	static #succeedToCreatePackageJson = async (binaryScriptName, absoluteFilePath, jsonPath) => {
+	static #succeedToCreatePackageJson = async (
+		binaryScriptName,
+		relativeFilePathFromProject,
+		jsonPath
+	) => {
 		const [, error] = await TryAsync(async () => {
 			return await FileSafe.write(
 				jsonPath,
-				await format(JSON.stringify({ bin: { [binaryScriptName]: absoluteFilePath } }), {
+				await format(JSON.stringify({ bin: { [binaryScriptName]: relativeFilePathFromProject } }), {
 					parser: 'json-stringify',
 				}),
 				{
@@ -188,7 +200,7 @@ new Xixth({
 	};
 	/**
 	 * @param {string} binaryScriptName
-	 * @param {string} fileName
+	 * @param {string} relativeFilePathFromProject
 	 * @param {string} jsonPath
 	 * @param {boolean|string} [stringifiedScript]
 	 * @param {boolean|string} [stringifiedExec]
@@ -196,7 +208,7 @@ new Xixth({
 	 */
 	static #succeedToEditPackageJson = async (
 		binaryScriptName,
-		fileName,
+		relativeFilePathFromProject,
 		jsonPath,
 		stringifiedScript = false,
 		stringifiedExec = false
@@ -204,7 +216,7 @@ new Xixth({
 		const [_, error] = await TryAsync(async () => {
 			const jsonString = await readFile(jsonPath, { encoding: 'utf8' });
 			const json = JSON.parse(jsonString);
-			let bin = { [binaryScriptName]: fileName };
+			let bin = { [binaryScriptName]: relativeFilePathFromProject };
 			if ('bin' in json) {
 				bin = { ...json.bin, ...bin };
 			} else {
