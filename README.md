@@ -110,7 +110,7 @@ import { AddBin } from "xixth";
  * @param {string} relativeFilePathFromProject
  * - file name with extentionName;
  * - can also be nested inside folder;
- * @param {Object} options
+ * @param {Object} [options]
  * @param {string} [options.overrideXixthStarterCode]
  * - default: use xixth standard code;
  * - string: write file with inputed string;

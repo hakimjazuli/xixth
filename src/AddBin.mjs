@@ -103,7 +103,7 @@ export class AddBin {
 	 * @param {string} relativeFilePathFromProject
 	 * - file name with extentionName;
 	 * - can also be nested inside folder;
-	 * @param {Object} options
+	 * @param {Object} [options]
 	 * @param {string} [options.overrideXixthStarterCode]
 	 * - default: use xixth standard code;
 	 * - string: write file with inputed string;
@@ -125,7 +125,7 @@ export class AddBin {
 	static new = async (
 		scriptName,
 		relativeFilePathFromProject,
-		{ overrideXixthStarterCode = undefined, runtime = 'node' }
+		{ overrideXixthStarterCode = undefined, runtime = 'node' } = {}
 	) => {
 		await AddBin.registerReference(
 			scriptName,
