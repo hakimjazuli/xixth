@@ -37,6 +37,6 @@
 	},
 	"dependencies": {
 		"prettier": "^3.6.2",
-		"vivth": "^1.4.1"
+		"vivth": "^1.4.2"
 	}
 }
