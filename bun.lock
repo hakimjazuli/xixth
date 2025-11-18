@@ -5,7 +5,7 @@
       "name": "xixth",
       "dependencies": {
         "prettier": "^3.6.2",
-        "vivth": "^1.4.3",
+        "vivth": "^1.4.4",
       },
       "devDependencies": {
         "@types/bun": "^1.3.2",
@@ -332,7 +332,7 @@
 
     "util-deprecate": ["util-deprecate@1.0.2", "", {}, "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw=="],
 
-    "vivth": ["vivth@1.4.3", "", { "dependencies": { "@types/mime-types": "^3.0.1", "chokidar": "^4.0.3", "esbuild": "^0.25.12", "mime-types": "^3.0.1", "pkg": "^5.8.1", "prettier": "^3.6.2" } }, "sha512-VmurfDJ9p2a48lBfQGGyMK/DNbjeSWwFCsAkxMp+91B+V5SWY+qpj4I8b2WwTi+zqEg0+kzktx8DYDR70OMBJw=="],
+    "vivth": ["vivth@1.4.4", "", { "dependencies": { "@types/mime-types": "^3.0.1", "chokidar": "^4.0.3", "esbuild": "^0.25.12", "mime-types": "^3.0.1", "pkg": "^5.8.1", "prettier": "^3.6.2" } }, "sha512-QCB0bTrHUWBDfOaQNnNxIG/aoMt8ueCTxSgBQK4iOTAcN+BzvBMjq080x9AQZS1ueSIe2VNoYBG/0fSXLknjyw=="],
 
     "webidl-conversions": ["webidl-conversions@3.0.1", "", {}, "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="],
 
