@@ -14,31 +14,20 @@ export class AddBin {
     /**
      * @description
      * - procedural js bin script registrar for packages;
-     * @param {string} binScriptName
-     * - binary script name;
-     * - will be added to `package.json` `bin`;
-     * @param {string} relativeFilePathFromProject
-     * - file name with extentionName;
-     * - can also be nested inside folder;
-     * @param {false|string} [stringifiedScript]
-     * - default, false: does nothing;
-     * - string: add `scripts.${binScriptName}`:`${stringifiedScript}`
-     * @param {false|string} [stringifiedExec]
-     * - default, false: does nothing;
-     * - string: add `scripts.${binScriptName}-exe`:`${stringifiedExec}`
+     * @param {...import('./AddBinRegisterReferenceOptions.mjs').AddBinRegisterReferenceOptions} options
      * @returns {Promise<boolean>}
      * @example
      * import { AddBin } from 'xixth';
      *
      * (async () => {
-     *  await AddBin.registerReference(
-     * 		'my-script-name',
-     * 		'my-script-name.mjs',
+     *  await AddBin.registerReference({
+     * 		binScriptName: 'my-script-name',
+     * 		relativeFilePathFromProject: 'my-script-name.mjs',
      * 		// optional
-     * 	);
+     * 	});
      * })()
      */
-    static registerReference: (binScriptName: string, relativeFilePathFromProject: string, stringifiedScript?: false | string, stringifiedExec?: false | string) => Promise<boolean>;
+    static registerReference: (...options: import("./AddBinRegisterReferenceOptions.mjs").AddBinRegisterReferenceOptions[]) => Promise<boolean>;
     /**
      * - auto prefixer for binary def file;
      * @type {'#!/usr/bin/env node'}
@@ -78,19 +67,20 @@ export class AddBin {
         runtime?: string | undefined;
     }) => Promise<boolean>;
     /**
-     * @param {string} binaryScriptName
+     * @param {string} baseName
      * @param {string} relativeFilePathFromProject
      * @param {string} jsonPath
+     * @param {boolean} registerBin
      * @returns {Promise<boolean>}
      */
-    static "__#private@#succeedToCreatePackageJson": (binaryScriptName: string, relativeFilePathFromProject: string, jsonPath: string) => Promise<boolean>;
+    static "__#private@#succeedToCreatePackageJson": (baseName: string, relativeFilePathFromProject: string, jsonPath: string, registerBin: boolean) => Promise<boolean>;
     /**
-     * @param {string} binaryScriptName
+     * @param {string} baseName
      * @param {string} relativeFilePathFromProject
      * @param {string} jsonPath
      * @param {boolean|string} [stringifiedScript]
      * @param {boolean|string} [stringifiedExec]
      * @returns {Promise<boolean>}
      */
-    static "__#private@#succeedToEditPackageJson": (binaryScriptName: string, relativeFilePathFromProject: string, jsonPath: string, stringifiedScript?: boolean | string, stringifiedExec?: boolean | string) => Promise<boolean>;
+    static "__#private@#succeedToEditPackageJson": (baseName: string, relativeFilePathFromProject: string, jsonPath: string, stringifiedScript?: boolean | string, stringifiedExec?: boolean | string) => Promise<boolean>;
 }

@@ -50,6 +50,7 @@ npx your-script-name
 <h2 id="list-of-exported-api-and-typehelpers">list of exported API and typehelpers</h2>
 
 - [AddBin](#addbin)
+- [AddBinRegisterReferenceOptions](#addbinregisterreferenceoptions)
 - [FlagEntry](#flagentry)
 - [HandleOnCopyHandler](#handleoncopyhandler)
 - [PathCopyHandler](#pathcopyhandler)
@@ -67,18 +68,7 @@ npx your-script-name
 
 ```js
 /**
- * @param {string} binScriptName
- * - binary script name;
- * - will be added to `package.json` `bin`;
- * @param {string} relativeFilePathFromProject
- * - file name with extentionName;
- * - can also be nested inside folder;
- * @param {false|string} [stringifiedScript]
- * - default, false: does nothing;
- * - string: add `scripts.${binScriptName}`:`${stringifiedScript}`
- * @param {false|string} [stringifiedExec]
- * - default, false: does nothing;
- * - string: add `scripts.${binScriptName}-exe`:`${stringifiedExec}`
+ * @param {...import('./AddBinRegisterReferenceOptions.mjs').AddBinRegisterReferenceOptions} options
  * @returns {Promise<boolean>}
  */
 ```
@@ -89,11 +79,11 @@ npx your-script-name
 import { AddBin } from "xixth";
 
 (async () => {
-  await AddBin.registerReference(
-    "my-script-name",
-    "my-script-name.mjs",
+  await AddBin.registerReference({
+    binScriptName: "my-script-name",
+    relativeFilePathFromProject: "my-script-name.mjs",
     // optional
-  );
+  });
 })();
 ```
 
@@ -133,6 +123,33 @@ import { AddBin } from "xixth";
     // optional file content
   );
 })();
+```
+
+\*) <sub>[go to list of exported API and typehelpers](#list-of-exported-api-and-typehelpers)</sub>
+
+<h2 id="addbinregisterreferenceoptions">AddBinRegisterReferenceOptions</h2>
+
+- jsdoc types:
+
+```js
+/**
+ * @typedef {Object} AddBinRegisterReferenceOptions
+ * @property {string} baseName
+ * - base name for the script;
+ * - will be added to `package.json.bin`;
+ * @property {string} relativeFilePathFromProject
+ * - file name with extentionName;
+ * - can also be nested inside folder;
+ * @property {boolean} [registerBin]
+ * - default, `true`: register `binScriptName` to `package.json.bin`;
+ * - `false`: do nothing;
+ * @property {false|string} [stringifiedScript]
+ * - default, `false`: does nothing;
+ * - `string`: add `scripts.${binScriptName}`:`${stringifiedScript}`
+ * @property {false|string} [stringifiedExec]
+ * - default, `false`: does nothing;
+ * - `string`: add `scripts.${binScriptName}-exe`:`${stringifiedExec}`
+ */
 ```
 
 \*) <sub>[go to list of exported API and typehelpers](#list-of-exported-api-and-typehelpers)</sub>

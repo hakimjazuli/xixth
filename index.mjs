@@ -9,6 +9,9 @@
 export { AddBin } from './src/AddBin.mjs';
 export { Xixth } from './src/Xixth.mjs';
 /**
+ * @typedef {import('./src/AddBinRegisterReferenceOptions.mjs').AddBinRegisterReferenceOptions} AddBinRegisterReferenceOptions
+ */
+/**
  * @typedef {import('./src/FlagEntry.mjs').FlagEntry} FlagEntry
  */
 /**
