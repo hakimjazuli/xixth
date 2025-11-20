@@ -76,6 +76,7 @@ export class AddBin {
 					baseName,
 					relativeFilePathFromProject,
 					jsonPath,
+					registerBin,
 					stringifiedScript,
 					stringifiedExec
 				))
@@ -205,6 +206,7 @@ new Xixth({
 	 * @param {string} baseName
 	 * @param {string} relativeFilePathFromProject
 	 * @param {string} jsonPath
+	 * @param {boolean} registerBin
 	 * @param {boolean|string} [stringifiedScript]
 	 * @param {boolean|string} [stringifiedExec]
 	 * @returns {Promise<boolean>}
@@ -213,6 +215,7 @@ new Xixth({
 		baseName,
 		relativeFilePathFromProject,
 		jsonPath,
+		registerBin,
 		stringifiedScript = false,
 		stringifiedExec = false
 	) => {
@@ -220,10 +223,12 @@ new Xixth({
 			const jsonString = await readFile(jsonPath, { encoding: 'utf8' });
 			const json = JSON.parse(jsonString);
 			let bin = { [baseName]: relativeFilePathFromProject };
-			if ('bin' in json) {
-				bin = { ...json.bin, ...bin };
-			} else {
-				bin = { ...bin };
+			if (registerBin) {
+				if ('bin' in json) {
+					bin = { ...json.bin, ...bin };
+				} else {
+					bin = { ...bin };
+				}
 			}
 			const newJSON = { ...json, bin };
 			if (stringifiedScript) {

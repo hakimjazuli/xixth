@@ -78,9 +78,10 @@ export class AddBin {
      * @param {string} baseName
      * @param {string} relativeFilePathFromProject
      * @param {string} jsonPath
+     * @param {boolean} registerBin
      * @param {boolean|string} [stringifiedScript]
      * @param {boolean|string} [stringifiedExec]
      * @returns {Promise<boolean>}
      */
-    static "__#private@#succeedToEditPackageJson": (baseName: string, relativeFilePathFromProject: string, jsonPath: string, stringifiedScript?: boolean | string, stringifiedExec?: boolean | string) => Promise<boolean>;
+    static "__#private@#succeedToEditPackageJson": (baseName: string, relativeFilePathFromProject: string, jsonPath: string, registerBin: boolean, stringifiedScript?: boolean | string, stringifiedExec?: boolean | string) => Promise<boolean>;
 }
