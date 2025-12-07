@@ -222,15 +222,17 @@ new Xixth({
 		const [_, error] = await TryAsync(async () => {
 			const jsonString = await readFile(jsonPath, { encoding: 'utf8' });
 			const json = JSON.parse(jsonString);
-			let bin = { [baseName]: relativeFilePathFromProject };
-			if (registerBin) {
-				if ('bin' in json) {
-					bin = { ...json.bin, ...bin };
-				} else {
-					bin = { ...bin };
-				}
+			let bin;
+			const supposedBin = { [baseName]: relativeFilePathFromProject };
+			if ('bin' in json) {
+				bin = { ...json.bin, ...supposedBin };
+			} else {
+				bin = { ...supposedBin };
 			}
-			const newJSON = { ...json, bin };
+			const newJSON = { ...json };
+			if (registerBin) {
+				newJSON.bin = { ...bin };
+			}
 			if (stringifiedScript) {
 				newJSON.scripts = { ...json.scripts, [baseName]: stringifiedScript };
 			}
